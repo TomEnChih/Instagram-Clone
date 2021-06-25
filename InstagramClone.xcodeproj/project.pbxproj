@@ -34,6 +34,11 @@
 		D9C993062685B4BC003D6D70 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C993052685B4BC003D6D70 /* LoginView.swift */; };
 		D9C9930A2685B4F6003D6D70 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = D9C993092685B4F6003D6D70 /* SnapKit */; };
 		D9C9930F2685CA8A003D6D70 /* RegistrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9930E2685CA8A003D6D70 /* RegistrationView.swift */; };
+		D9C993162685F76B003D6D70 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C993152685F76B003D6D70 /* SettingsView.swift */; };
+		D9C9931C2685FD68003D6D70 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9931B2685FD68003D6D70 /* ProfileView.swift */; };
+		D9C9931F2685FDDB003D6D70 /* ProfileInformationCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9931E2685FDDB003D6D70 /* ProfileInformationCollectionViewCell.swift */; };
+		D9C993222685FEA8003D6D70 /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C993212685FEA8003D6D70 /* Model.swift */; };
+		D9C99325268607C1003D6D70 /* ExploreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C99324268607C1003D6D70 /* ExploreView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -67,6 +72,11 @@
 		D9C993012685B2E7003D6D70 /* AuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
 		D9C993052685B4BC003D6D70 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		D9C9930E2685CA8A003D6D70 /* RegistrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegistrationView.swift; sourceTree = "<group>"; };
+		D9C993152685F76B003D6D70 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		D9C9931B2685FD68003D6D70 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+		D9C9931E2685FDDB003D6D70 /* ProfileInformationCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileInformationCollectionViewCell.swift; sourceTree = "<group>"; };
+		D9C993212685FEA8003D6D70 /* Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
+		D9C99324268607C1003D6D70 /* ExploreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -168,14 +178,7 @@
 		D9C992BB2685A15D003D6D70 /* Other */ = {
 			isa = PBXGroup;
 			children = (
-				D9C992CA2685A38A003D6D70 /* PostVC.swift */,
-				D9C992CE2685A3E1003D6D70 /* EditProfileVC.swift */,
-				D9C992D12685A3F2003D6D70 /* SettingsVC.swift */,
-				D9C992D42685A401003D6D70 /* ListVC.swift */,
-				D9C992D72685A42B003D6D70 /* SearchVC.swift */,
-				D9C992DA2685A448003D6D70 /* SearchResultVC.swift */,
-				D9C992DD2685A477003D6D70 /* PostEditorVC.swift */,
-				D9C992E02685A4A4003D6D70 /* PublishPostVC.swift */,
+				D9C993122685F6F0003D6D70 /* General */,
 				D9C992BC2685A170003D6D70 /* Onboarding */,
 			);
 			path = Other;
@@ -193,6 +196,7 @@
 		D9C992FB2685AF8B003D6D70 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				D9C993212685FEA8003D6D70 /* Model.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -201,6 +205,7 @@
 			isa = PBXGroup;
 			children = (
 				D9C993042685B494003D6D70 /* OtherView */,
+				D9C9931A2685FD01003D6D70 /* Core Tabs View */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -208,10 +213,52 @@
 		D9C993042685B494003D6D70 /* OtherView */ = {
 			isa = PBXGroup;
 			children = (
+				D9C993142685F73D003D6D70 /* Onboarding */,
+				D9C993132685F737003D6D70 /* General */,
+			);
+			path = OtherView;
+			sourceTree = "<group>";
+		};
+		D9C993122685F6F0003D6D70 /* General */ = {
+			isa = PBXGroup;
+			children = (
+				D9C992CA2685A38A003D6D70 /* PostVC.swift */,
+				D9C992CE2685A3E1003D6D70 /* EditProfileVC.swift */,
+				D9C992D12685A3F2003D6D70 /* SettingsVC.swift */,
+				D9C992D42685A401003D6D70 /* ListVC.swift */,
+				D9C992D72685A42B003D6D70 /* SearchVC.swift */,
+				D9C992DA2685A448003D6D70 /* SearchResultVC.swift */,
+				D9C992DD2685A477003D6D70 /* PostEditorVC.swift */,
+				D9C992E02685A4A4003D6D70 /* PublishPostVC.swift */,
+			);
+			path = General;
+			sourceTree = "<group>";
+		};
+		D9C993132685F737003D6D70 /* General */ = {
+			isa = PBXGroup;
+			children = (
+				D9C993152685F76B003D6D70 /* SettingsView.swift */,
+			);
+			path = General;
+			sourceTree = "<group>";
+		};
+		D9C993142685F73D003D6D70 /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
 				D9C993052685B4BC003D6D70 /* LoginView.swift */,
 				D9C9930E2685CA8A003D6D70 /* RegistrationView.swift */,
 			);
-			path = OtherView;
+			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		D9C9931A2685FD01003D6D70 /* Core Tabs View */ = {
+			isa = PBXGroup;
+			children = (
+				D9C9931B2685FD68003D6D70 /* ProfileView.swift */,
+				D9C9931E2685FDDB003D6D70 /* ProfileInformationCollectionViewCell.swift */,
+				D9C99324268607C1003D6D70 /* ExploreView.swift */,
+			);
+			path = "Core Tabs View";
 			sourceTree = "<group>";
 		};
 		DCD98C5397D894A33E01B74A /* Frameworks */ = {
@@ -343,6 +390,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				D9C992D52685A401003D6D70 /* ListVC.swift in Sources */,
+				D9C99325268607C1003D6D70 /* ExploreView.swift in Sources */,
+				D9C993162685F76B003D6D70 /* SettingsView.swift in Sources */,
 				D9C992D22685A3F2003D6D70 /* SettingsVC.swift in Sources */,
 				D9C9929726832BB4003D6D70 /* HomeVC.swift in Sources */,
 				D9C992B42685A0F4003D6D70 /* NotificationsVC.swift in Sources */,
@@ -356,8 +405,11 @@
 				D9C9930F2685CA8A003D6D70 /* RegistrationView.swift in Sources */,
 				D9C992DE2685A477003D6D70 /* PostEditorVC.swift in Sources */,
 				D9C992B12685A0D8003D6D70 /* CameraVC.swift in Sources */,
+				D9C9931F2685FDDB003D6D70 /* ProfileInformationCollectionViewCell.swift in Sources */,
 				D9C992E12685A4A4003D6D70 /* PublishPostVC.swift in Sources */,
+				D9C9931C2685FD68003D6D70 /* ProfileView.swift in Sources */,
 				D9C992AE2685A0C4003D6D70 /* ExploreVC.swift in Sources */,
+				D9C993222685FEA8003D6D70 /* Model.swift in Sources */,
 				D9C993062685B4BC003D6D70 /* LoginView.swift in Sources */,
 				D9C992FE2685AFD5003D6D70 /* DatabaseManager.swift in Sources */,
 				D9C9929526832BB4003D6D70 /* SceneDelegate.swift in Sources */,

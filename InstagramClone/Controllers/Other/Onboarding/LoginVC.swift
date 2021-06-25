@@ -80,7 +80,7 @@ class LoginVC: UIViewController {
         }
         
         loginView.TermsButtonAction = {
-            guard let url = URL(string: "https://www.instagram.com/about/legal/terms/before-january-19-2013/") else {
+            guard let url = URL(string: "") else {
                 return
             }
             
