@@ -11,7 +11,7 @@ class TabBarController: UITabBarController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        setTabBar()
     }
     
 
@@ -31,17 +31,17 @@ class TabBarController: UITabBarController {
         let profileVC = ProfileVC()
         let navProfileVC = UINavigationController(rootViewController: profileVC)
         
-        navHomeVC.tabBarItem.image = UIImage(systemName: "house.fill")
+        navHomeVC.tabBarItem.image = UIImage(systemName: "house")
         
         navExploreVC.tabBarItem.image = UIImage(systemName: "magnifyingglass")
                 
-        navProduceVC.tabBarItem.image = UIImage(systemName: "plus.square.fill")
+        navProduceVC.tabBarItem.image = UIImage(systemName: "plus.square")
         
-        navNotificationsVC.tabBarItem.image = UIImage(systemName:"bell.fill")
+        navNotificationsVC.tabBarItem.image = UIImage(systemName:"bell")
         
-        navProfileVC.tabBarItem.image = UIImage(systemName: "person.fill")
+        navProfileVC.tabBarItem.image = UIImage(systemName: "person")
         
-        self.viewControllers = [navHomeVC,navExploreVC,navNotificationsVC,navProduceVC,navProfileVC]
+        self.viewControllers = [navHomeVC,navExploreVC,navProduceVC,navNotificationsVC,navProfileVC]
     }
 
 }

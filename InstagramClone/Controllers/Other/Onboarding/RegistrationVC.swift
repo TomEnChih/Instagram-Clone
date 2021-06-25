@@ -8,22 +8,66 @@
 import UIKit
 
 class RegistrationVC: UIViewController {
-
+    
+    // MARK: - Properties
+    
+    private let registerView = RegistrationView()
+    
+    // MARK: - Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
+        view = registerView
+        registerView.usernameField.delegate = self
+        registerView.emailField.delegate = self
+        registerView.passswordField.delegate = self
+        buttonActionFunction()
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+    // MARK: - Methods
+    func buttonActionFunction() {
+        
+        registerView.signUpButtonAction = {
+            self.registerView.usernameField.resignFirstResponder()
+            self.registerView.emailField.resignFirstResponder()
+            self.registerView.passswordField.resignFirstResponder()
+            
+            guard let username = self.registerView.usernameField.text, !username.isEmpty,
+                  let email = self.registerView.emailField.text,!email.isEmpty,
+                  let password = self.registerView.passswordField.text,!password.isEmpty,password.count >= 8
+                  else { return }
+            
+            AuthManager.shared.registerNewUser(username: username, email: email, password: password) { (registered) in
+                DispatchQueue.main.async {
+                    if registered {
+                        // good to go
+                        #warning("還沒做")
+                    } else {
+                        // failed
+                    }
+                }
+            }
+            
+        }
     }
-    */
+    
+}
 
+//MARK: - TextFieldDelegate
+extension RegistrationVC: UITextFieldDelegate {
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        if textField == registerView.usernameField {
+            registerView.emailField.becomeFirstResponder()
+        }
+        else if textField == registerView.emailField {
+            registerView.passswordField.becomeFirstResponder()
+        }
+        else if textField == registerView.passswordField {
+            registerView.didTapSignUpButton()
+        }
+        
+        return true
+    }
+    
 }
