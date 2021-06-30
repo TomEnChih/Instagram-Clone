@@ -7,6 +7,15 @@
 
 import UIKit
 
+protocol ProfileInformationCollectionViewCellDelegate: AnyObject {
+    func editProfileAction(_ cell: UICollectionViewCell)
+    func profileDidTapPostButton(_ cell: UICollectionViewCell)
+    func profileDidTapFollowersButton(_ cell: UICollectionViewCell)
+    func profileDidTapFolloweringButton(_ cell: UICollectionViewCell)
+
+}
+
+
 class ProfileInformationCollectionViewCell: UICollectionViewCell {
     
     // MARK: - Properties
@@ -14,6 +23,8 @@ class ProfileInformationCollectionViewCell: UICollectionViewCell {
     static let cellkey = "ProfileInformationCollectionViewCell"
     
     var editProfileAction: (()->Void)?
+    
+    public weak var delegate: ProfileInformationCollectionViewCellDelegate?
 
     // MARK: - IBElement
     
@@ -24,45 +35,61 @@ class ProfileInformationCollectionViewCell: UICollectionViewCell {
         imageView.backgroundColor = #colorLiteral(red: 0.9529411793, green: 0.6862745285, blue: 0.1333333403, alpha: 1)
         return imageView
     }()
+
     
-    private let articleLabel: UILabel = {
-        let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 15)
-        label.text = "創作"
-        label.textColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
-        label.textAlignment = NSTextAlignment.center
-        return label
+    let postButton: UIButton = {
+        let button = UIButton()
+        button.setTitle("貼文", for: .normal)
+        button.titleLabel?.font = UIFont.italicSystemFont(ofSize: 15)
+        button.setTitleColor(#colorLiteral(red: 0, green: 0, blue: 0, alpha: 1), for: .normal)
+        return button
     }()
     
-    private let followersLabel: UILabel = {
-        let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 15)
-        label.text = "粉絲"
-        label.textColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
-        label.textAlignment = NSTextAlignment.center
-        return label
+    let followersButton: UIButton = {
+        let button = UIButton()
+        button.setTitle("粉絲", for: .normal)
+        button.titleLabel?.font = UIFont.italicSystemFont(ofSize: 15)
+        button.setTitleColor(#colorLiteral(red: 0, green: 0, blue: 0, alpha: 1), for: .normal)
+        return button
+    }()
+    
+    let followeringButton: UIButton = {
+        let button = UIButton()
+        button.setTitle("追蹤中", for: .normal)
+        button.titleLabel?.font = UIFont.italicSystemFont(ofSize: 15)
+        button.setTitleColor(#colorLiteral(red: 0, green: 0, blue: 0, alpha: 1), for: .normal)
+        return button
     }()
     
     let articleNumbelLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 15)
+        label.font = UIFont.boldSystemFont(ofSize: 20)
         label.text = "5"
         label.textColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
         label.textAlignment = NSTextAlignment.center
         return label
     }()
 
-    let follersNumberLabel: UILabel = {
+    let followersNumberLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 15)
+        label.font = UIFont.boldSystemFont(ofSize: 20)
         label.text = "3"
         label.textColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
         label.textAlignment = NSTextAlignment.center
         return label
     }()
     
+    let followeringNumberLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.boldSystemFont(ofSize: 20)
+        label.text = "4"
+        label.textColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
+        label.textAlignment = NSTextAlignment.center
+        return label
+    }()
+    
     lazy var numberStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [articleNumbelLabel,follersNumberLabel])
+        let stackView = UIStackView(arrangedSubviews: [articleNumbelLabel,followersNumberLabel,followeringNumberLabel])
         stackView.axis = .horizontal
         stackView.distribution = .fillEqually
         stackView.alignment = .bottom
@@ -71,7 +98,7 @@ class ProfileInformationCollectionViewCell: UICollectionViewCell {
     }()
     
     lazy var tabsStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [articleLabel,followersLabel])
+        let stackView = UIStackView(arrangedSubviews: [postButton,followersButton,followeringButton])
         stackView.axis = .horizontal
         stackView.distribution = .fillEqually
         stackView.alignment = .top
@@ -163,7 +190,7 @@ class ProfileInformationCollectionViewCell: UICollectionViewCell {
         addSubview(editPersonInforButton)
         autoLayout()
         
-        editPersonInforButton.addTarget(self, action: #selector(didTapEditProfile), for: .touchUpInside)
+        buttonTapAction()
 
     }
     
@@ -172,7 +199,29 @@ class ProfileInformationCollectionViewCell: UICollectionViewCell {
     }
     // MARK: - Methods
     
+    func buttonTapAction() {
+        editPersonInforButton.addTarget(self, action: #selector(didTapEditProfile), for: .touchUpInside)
+        
+        postButton.addTarget(self, action: #selector(didTapArticleButton), for: .touchUpInside)
+
+        followersButton.addTarget(self, action: #selector(didTapFollowersButton), for: .touchUpInside)
+
+        followeringButton.addTarget(self, action: #selector(didTapFolloweringButton), for: .touchUpInside)
+    }
+    
     @objc private func didTapEditProfile() {
-        editProfileAction?()
+        delegate?.editProfileAction(self)
+    }
+    
+    @objc private func didTapArticleButton() {
+        delegate?.profileDidTapPostButton(self)
+    }
+    
+    @objc private func didTapFollowersButton() {
+        delegate?.profileDidTapFollowersButton(self)
+    }
+    
+    @objc private func didTapFolloweringButton() {
+        delegate?.profileDidTapFolloweringButton(self)
     }
 }

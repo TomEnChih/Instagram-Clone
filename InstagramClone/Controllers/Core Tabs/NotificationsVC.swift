@@ -8,22 +8,41 @@
 import UIKit
 
 class NotificationsVC: UIViewController {
-
+    
+    // MARK: - Properties
+    
+    private let notificationsView = NotificationsView()
+    
+    private let noNotificationsView = NoNotificationsView()
+    
+    // MARK: - Init
+    
+    // MARK: - Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
+        view = noNotificationsView
+        navigationController?.title = "Notifications"
+        notificationsView.notificationsTableView.delegate = self
+        notificationsView.notificationsTableView.dataSource = self
     }
     
+    // MARK: - Methods
 
-    /*
-    // MARK: - Navigation
+    
+}
 
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+extension NotificationsVC: UITableViewDelegate,UITableViewDataSource {
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        1
     }
-    */
-
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "notificationsTableView", for: indexPath)
+        
+        return cell
+    }
+    
+    
 }

@@ -19,8 +19,8 @@ class ProfileVC: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view = profileView
-        profileView.prfileArticleCollectionView.delegate = self
-        profileView.prfileArticleCollectionView.dataSource = self
+        profileView.prfileCollectionView.delegate = self
+        profileView.prfileCollectionView.dataSource = self
         configureNavigationBar()
     }
     
@@ -53,6 +53,7 @@ extension ProfileVC: UICollectionViewDelegateFlowLayout, UICollectionViewDataSou
         case .Information:
             return 1
         case .Article:
+//            return userPost.count
             return 20
         }
     }
@@ -63,6 +64,8 @@ extension ProfileVC: UICollectionViewDelegateFlowLayout, UICollectionViewDataSou
         case .Information:
             
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ProfileInformationCollectionViewCell.cellkey, for: indexPath) as! ProfileInformationCollectionViewCell
+            
+            cell.delegate = self
             
             cell.nameLabel.text = "tom tung"
             cell.bioLabel.text = "hello,it is my first account."
@@ -81,6 +84,9 @@ extension ProfileVC: UICollectionViewDelegateFlowLayout, UICollectionViewDataSou
             
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CollectionViewCell", for: indexPath)
             
+//            let model = userPost[indexPath.row]
+            
+            
             cell.backgroundColor = .systemBlue
             return cell
         }
@@ -88,26 +94,109 @@ extension ProfileVC: UICollectionViewDelegateFlowLayout, UICollectionViewDataSou
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         
-        let size = (profileView.prfileArticleCollectionView.frame.width - 4)/3
+        let articleCellSize = (profileView.prfileCollectionView.frame.width - 4)/3
         
         switch profileSection[indexPath.section] {
         case .Information:
-            return CGSize(width: profileView.prfileArticleCollectionView.frame.width, height: profileView.prfileArticleCollectionView.frame.height/3)
+            return CGSize(width: profileView.prfileCollectionView.frame.width, height: profileView.prfileCollectionView.frame.height/3)
         case .Article:
-            return CGSize(width: size, height: size)
+            return CGSize(width: articleCellSize, height: articleCellSize)
         }
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
 //        let model = userPost[indexPath.row]
+        
         switch profileSection[indexPath.section] {
+        
         case .Information: break
+        
         case .Article: break
-//            let vc = ArticleVC(model: nil)
+//            let vc = PostVC(model: model)
 //            vc.title = "tom Test"
 //            vc.navigationItem.largeTitleDisplayMode = .never
 //            navigationController?.pushViewController(vc, animated: true)
         }
     }
+    
+    
+    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+        guard kind == UICollectionView.elementKindSectionHeader else {
+            //footer
+            return UICollectionReusableView()
+        }
+        
+        switch profileSection[indexPath.section] {
+        case .Information:
+            break
+        case .Article:
+            let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: ProfileTabsCollectionReusableView.cellKey, for: indexPath) as! ProfileTabsCollectionReusableView
+            
+            return header
+        }
+        
+        return UICollectionReusableView()
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
+        switch profileSection[section] {
+        case .Information:
+            return .zero
+        case .Article:
+            return CGSize(width: profileView.prfileCollectionView.frame.width, height: 55)
+        }
+    }
+    
+}
 
+//MARK: - ProfileInformationCollectionViewCellDelegate
+#warning("思考一下需不需要")
+extension ProfileVC: ProfileInformationCollectionViewCellDelegate {
+    
+    func editProfileAction(_ cell: UICollectionViewCell) {
+        let vc = EditProfileVC()
+        vc.title = "編輯個人資訊"
+        let navVC = UINavigationController(rootViewController: vc)
+        navVC.modalPresentationStyle = .fullScreen
+        self.present(navVC, animated: true, completion: nil)
+    }
+    
+    func profileDidTapPostButton(_ cell: UICollectionViewCell) {
+//        let index = IndexPath()
+//        let profileIndex = profileSection[index.section]
+//
+//        switch profileIndex {
+//        case .Information:
+//            break
+//        case .Article:
+//            profileView.prfilePostCollectionView.scrollToItem(at: IndexPath(row: 0, section: 1) , at: .top, animated: true)
+//
+//        }
+    }
+    
+    func profileDidTapFollowersButton(_ cell: UICollectionViewCell) {
+        var tomdata = [UserRelationship]()
+        for x in 0...10 {
+            tomdata.append(UserRelationship(username: "@tom", name: "tom", type: x % 2 == 0 ? .following:.unFollowing))
+        }
+        
+        let vc = ListVC(data: tomdata)
+        vc.title = "Followers"
+        navigationItem.largeTitleDisplayMode = .never
+        navigationController?.pushViewController(vc, animated: true)
+    }
+    
+    func profileDidTapFolloweringButton(_ cell: UICollectionViewCell) {
+        var tomdata = [UserRelationship]()
+        for x in 0...10 {
+            tomdata.append(UserRelationship(username: "@tom", name: "tom", type: x % 2 == 0 ? .following:.unFollowing))
+        }
+        
+        let vc = ListVC(data: tomdata)
+        vc.title = "Followering"
+        navigationItem.largeTitleDisplayMode = .never
+        navigationController?.pushViewController(vc, animated: true)
+    }
+    
+    
 }

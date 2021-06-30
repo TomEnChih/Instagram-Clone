@@ -8,22 +8,71 @@
 import UIKit
 
 class ListVC: UIViewController {
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
+    // MARK: - Properties
+    
+    private let data: [UserRelationship]
+    
+    private let listView = ListView()
+    
+    // MARK: - Init
+    
+    init(data: [UserRelationship]) {
+        self.data = data
+        super.init(nibName: nil, bundle: nil)
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
-    */
+    
+    // MARK: - Lifecycle
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view = listView
+        listView.listTableView.dataSource = self
+        listView.listTableView.delegate = self
+    }
 
+    // MARK: - Methods
+    
+    
+}
+
+extension ListVC: UITableViewDelegate,UITableViewDataSource {
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        data.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: UserFollowTableViewCell.cellKey, for: indexPath) as! UserFollowTableViewCell
+        
+        cell.configure(with: data[indexPath.row])
+        
+        cell.delegate = self
+        
+        return cell
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+    }
+}
+
+extension ListVC: UserFollowTableViewCellDelegate {
+    
+    
+    func didTapFollowUnFollowButton(model: UserRelationship) {
+        switch model.type {
+        case .following:
+            // perform firebase update to unfollow
+            break
+        case .unFollowing:
+            // perform firebase update to follow
+            break
+        }
+    }
+    
+    
 }

@@ -17,7 +17,7 @@ struct User {
     let bio: String
     let birthDate: Date
 //    let email: String
-     let gender: Gender
+    let gender: Gender
     let counts: UserCount
     let joinDate: Date
 }
@@ -65,8 +65,8 @@ struct PostComment {
 
 
 
-enum Profile {
-    case Information
+enum Profile: Int {
+    case Information = 0
     case Article
 
 }
