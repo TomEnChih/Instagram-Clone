@@ -7,6 +7,8 @@
 
 import UIKit
 
+
+// Commets
 class IGFeedPostGeneralTableViewCell: UITableViewCell {
 
     override func awakeFromNib() {

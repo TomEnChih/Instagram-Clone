@@ -15,7 +15,8 @@ class NotificationsView: UIView {
         
     let notificationsTableView: UITableView = {
         let tv = UITableView()
-        tv.register(UITableViewCell.self, forCellReuseIdentifier: "notificationsTableView")
+        tv.register(NotificationFollowEventTableViewCell.self, forCellReuseIdentifier: NotificationFollowEventTableViewCell.cellKey)
+        tv.register(NotificationLikeEventTableViewCell.self, forCellReuseIdentifier: NotificationLikeEventTableViewCell.cellKey)
         return tv
     }()
     

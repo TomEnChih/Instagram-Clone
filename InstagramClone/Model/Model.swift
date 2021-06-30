@@ -15,6 +15,7 @@ struct User {
     let name:(first: String, last: String)
     let username: String
     let bio: String
+    let profilePhoto: URL
     let birthDate: Date
 //    let email: String
     let gender: Gender
@@ -29,8 +30,9 @@ struct UserCount {
 }
 
 
-public enum UserPostType {
-    case photo, video
+public enum UserPostType: String {
+    case photo = "Photo"
+    case video = "Video"
 }
 
 /// Represents a user post
