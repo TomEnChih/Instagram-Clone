@@ -45,7 +45,8 @@ public struct UserPost {
     let likeCount: [PostLike]
     let comments:[PostComment]
     let createdDate: Date
-    let taggedUser: [User]
+    let taggedUsers: [String] // 不確定 User
+    let owner: User
 }
 
 struct PostLike {

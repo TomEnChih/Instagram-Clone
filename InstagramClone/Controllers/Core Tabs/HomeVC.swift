@@ -8,13 +8,30 @@
 import UIKit
 import FirebaseAuth
 
-class HomeVC: UIViewController {
+struct HomeFeedRenderViewModel {
+    
+}
 
+
+
+class HomeVC: UIViewController {
+    
+    // MARK: - Properties
+    
+    private let homeView = HomeView()
+    
+    // MARK: - Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        view = homeView
+        homeView.teamTableView.delegate = self
+        homeView.teamTableView.dataSource = self
         handleNotAuthenticated()
         
     }
+    
+    // MARK: - Methods
     
     private func handleNotAuthenticated() {
         // Check auth status
@@ -26,5 +43,23 @@ class HomeVC: UIViewController {
         }
     }
 
+}
+
+//MARK: - TableViewDelegate,TableViewDataSource
+extension HomeVC: UITableViewDelegate,UITableViewDataSource {
+    
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        1
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: IGFeedPostTableViewCell.cellKey, for: indexPath)
+        
+        return cell
+    }
+    
+    
+    
 }
 

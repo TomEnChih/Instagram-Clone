@@ -100,7 +100,7 @@ class NotificationLikeEventTableViewCell: UITableViewCell {
         switch model.type {
         case .like(let post):
 //            let thumbnail = post.thumbnailImage
-//            followButton.
+            postButton.setImage(UIImage(systemName: "person"), for: .normal)
         break
         case .follow:
             break

@@ -42,28 +42,34 @@ class NotificationsVC: UIViewController {
     }
     
     // MARK: - Methods
-
+    
     func fetchNotifications() {
+        
+        
         for x in 0...100 {
+            
+            let user = User(name: (first: "String", last: "tom"),
+                            username: "tom", bio: "123123",
+                            profilePhoto: URL(string: "https://www.google.com")!,
+                            birthDate: Date(),
+                            gender: .male,
+                            counts: UserCount(followers: 1, following: 2, posts: 3),
+                            joinDate: Date())
+            
             let post = UserPost(identifier: "", postType: .photo,
                                 thumbnailImage: URL(string: "https://www.google.com")!,
-                                postURL: URL(string: "https://www.google.com")!,
+                                postURL: URL(string: "https://storage.googleapis.com/redso-challenge.appspot.com/catalog/0.jpg")!,
                                 caption: nil,
                                 likeCount: [],
                                 comments: [],
                                 createdDate: Date(),
-                                taggedUser: [])
-                
+                                taggedUsers: [],
+                                owner: user)
+            
             let model = UserNotification(type: x % 2 == 0 ? .follow(state: .unFollowing):.like(post: post),
                                          text: "hellow world",
-                                         user: User(name: (first: "String", last: "tom"),
-                                                    username: "tom", bio: "123123",
-                                                    profilePhoto: URL(string: "https://www.google.com")!,
-                                                    birthDate: Date(),
-                                                    gender: .male,
-                                                    counts: UserCount(followers: 1, following: 2, posts: 3),
-                                                    joinDate: Date()))
-        
+                                         user: user)
+            
             models.append(model)
         }
     }
@@ -88,16 +94,16 @@ extension NotificationsVC: UITableViewDelegate,UITableViewDataSource {
             let cell = tableView.dequeueReusableCell(withIdentifier: NotificationLikeEventTableViewCell.cellKey, for: indexPath) as! NotificationLikeEventTableViewCell
             
             cell.configure(with: model)
-
+            
             
             cell.delegate = self
-
+            
             return cell
         case .follow:
             // follow cell
             let cell = tableView.dequeueReusableCell(withIdentifier: NotificationFollowEventTableViewCell.cellKey, for: indexPath) as! NotificationFollowEventTableViewCell
             
-//            cell.configure(with: model)
+            cell.configure(with: model)
             
             cell.delegate = self
             

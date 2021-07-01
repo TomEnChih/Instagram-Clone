@@ -46,7 +46,6 @@ class NotificationFollowEventTableViewCell: UITableViewCell {
     private let followButton: UIButton = {
         let button = UIButton()
         button.backgroundColor = .lightGray
-        button
         return button
     }()
         

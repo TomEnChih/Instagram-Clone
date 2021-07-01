@@ -19,6 +19,7 @@
 		D99E3510268974C000723977 /* IGFeedPostActionsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D99E350F268974C000723977 /* IGFeedPostActionsTableViewCell.swift */; };
 		D99E35132689750000723977 /* IGFeedPostGeneralTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D99E35122689750000723977 /* IGFeedPostGeneralTableViewCell.swift */; };
 		D99E3518268983A300723977 /* ProfileTabsCollectionReusableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D99E3517268983A300723977 /* ProfileTabsCollectionReusableView.swift */; };
+		D9A617E3268C6098002852AE /* PostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9A617E2268C6098002852AE /* PostView.swift */; };
 		D9C9929326832BB4003D6D70 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9929226832BB4003D6D70 /* AppDelegate.swift */; };
 		D9C9929526832BB4003D6D70 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9929426832BB4003D6D70 /* SceneDelegate.swift */; };
 		D9C9929726832BB4003D6D70 /* HomeVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C9929626832BB4003D6D70 /* HomeVC.swift */; };
@@ -71,6 +72,7 @@
 		D99E350F268974C000723977 /* IGFeedPostActionsTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IGFeedPostActionsTableViewCell.swift; sourceTree = "<group>"; };
 		D99E35122689750000723977 /* IGFeedPostGeneralTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IGFeedPostGeneralTableViewCell.swift; sourceTree = "<group>"; };
 		D99E3517268983A300723977 /* ProfileTabsCollectionReusableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileTabsCollectionReusableView.swift; sourceTree = "<group>"; };
+		D9A617E2268C6098002852AE /* PostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostView.swift; sourceTree = "<group>"; };
 		D9C9928F26832BB4003D6D70 /* InstagramClone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = InstagramClone.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D9C9929226832BB4003D6D70 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D9C9929426832BB4003D6D70 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -142,7 +144,7 @@
 			path = Notifications;
 			sourceTree = "<group>";
 		};
-		D99E350A2689744F00723977 /* Home Feed */ = {
+		D99E350A2689744F00723977 /* Home Feed & Post */ = {
 			isa = PBXGroup;
 			children = (
 				D9C9932C26860CC5003D6D70 /* IGFeedPostTableViewCell.swift */,
@@ -150,7 +152,7 @@
 				D99E350F268974C000723977 /* IGFeedPostActionsTableViewCell.swift */,
 				D99E35122689750000723977 /* IGFeedPostGeneralTableViewCell.swift */,
 			);
-			path = "Home Feed";
+			path = "Home Feed & Post";
 			sourceTree = "<group>";
 		};
 		D99E35152689807B00723977 /* ProfileCell */ = {
@@ -304,6 +306,7 @@
 				D9C99332268615A4003D6D70 /* EditProfileView.swift */,
 				D9C993382686164D003D6D70 /* EditProfileHeaderView.swift */,
 				D9046F7E268AD70400B6C5C7 /* ListView.swift */,
+				D9A617E2268C6098002852AE /* PostView.swift */,
 			);
 			path = General;
 			sourceTree = "<group>";
@@ -333,7 +336,7 @@
 			isa = PBXGroup;
 			children = (
 				D9046F8B268B14FB00B6C5C7 /* Notifications */,
-				D99E350A2689744F00723977 /* Home Feed */,
+				D99E350A2689744F00723977 /* Home Feed & Post */,
 				D99E35152689807B00723977 /* ProfileCell */,
 				D9C9933526861614003D6D70 /* FormTableViewCell.swift */,
 				D9046F81268ADBEA00B6C5C7 /* UserFollowTableViewCell.swift */,
@@ -479,6 +482,7 @@
 				D99E3510268974C000723977 /* IGFeedPostActionsTableViewCell.swift in Sources */,
 				D9C993392686164D003D6D70 /* EditProfileHeaderView.swift in Sources */,
 				D9046F91268B157400B6C5C7 /* NotificationLikeEventTableViewCell.swift in Sources */,
+				D9A617E3268C6098002852AE /* PostView.swift in Sources */,
 				D9C992BE2685A1A0003D6D70 /* LoginVC.swift in Sources */,
 				D9C992C62685A274003D6D70 /* TabBarController.swift in Sources */,
 				D9C9933626861614003D6D70 /* FormTableViewCell.swift in Sources */,
