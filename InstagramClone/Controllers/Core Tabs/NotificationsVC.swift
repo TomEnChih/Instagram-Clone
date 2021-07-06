@@ -56,14 +56,12 @@ class NotificationsVC: UIViewController {
                             counts: UserCount(followers: 1, following: 2, posts: 3),
                             joinDate: Date())
             
-            let post = UserPost(identifier: "", postType: .photo,
-                                thumbnailImage: URL(string: "https://www.google.com")!,
+            let post = UserPost(postType: .photo,
                                 postURL: URL(string: "https://storage.googleapis.com/redso-challenge.appspot.com/catalog/0.jpg")!,
-                                caption: nil,
+                                caption: "it's my first picture",
                                 likeCount: [],
                                 comments: [],
                                 createdDate: Date(),
-                                taggedUsers: [],
                                 owner: user)
             
             let model = UserNotification(type: x % 2 == 0 ? .follow(state: .unFollowing):.like(post: post),

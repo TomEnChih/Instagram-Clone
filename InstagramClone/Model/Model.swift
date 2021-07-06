@@ -37,15 +37,15 @@ public enum UserPostType: String {
 
 /// Represents a user post
 public struct UserPost {
-    let identifier: String
+//    let identifier: String
     let postType: UserPostType
-    let thumbnailImage: URL
+//    let thumbnailImage: URL
     let postURL: URL
-    let caption: String?
+    let caption: String // 自己的po文內容
     let likeCount: [PostLike]
     let comments:[PostComment]
     let createdDate: Date
-    let taggedUsers: [String] // 不確定 User
+//    let taggedUsers: [String] // 不確定 User
     let owner: User
 }
 
@@ -60,12 +60,12 @@ struct CommentLike {
 }
 
 struct PostComment {
+    let thumbnailImage: URL
     let username: String
     let text: String
     let createdDate: Date
-    let like: [CommentLike]
+//    let like: [CommentLike]
 }
-
 
 
 enum Profile: Int {

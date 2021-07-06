@@ -14,6 +14,7 @@ class SettingsView: UIView {
     let settingsTableVeiw: UITableView = {
         let tv = UITableView()
         tv.register(UITableViewCell.self, forCellReuseIdentifier: "settingsTableVeiwCell")
+        tv.backgroundColor = .secondarySystemBackground
         return tv
     }()
 

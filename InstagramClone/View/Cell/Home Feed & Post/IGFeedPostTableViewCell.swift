@@ -45,6 +45,9 @@ class IGFeedPostTableViewCell: UITableViewCell {
         contentView.addSubview(postImageView)
         contentView.layer.addSublayer(playerLayer)
         autoLayout()
+
+        selectionStyle = .none
+
     }
     
     required init?(coder: NSCoder) {

@@ -18,7 +18,27 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
         guard let window = (scene as? UIWindowScene) else { return }
         self.window = UIWindow(windowScene: window)
-        self.window?.rootViewController = TabBarController()
+//        self.window?.rootViewController = TabBarController()
+        
+        let user = User(name: (first: "String", last: "tom"),
+                        username: "tom", bio: "hi,my name is tom",
+                        profilePhoto: URL(string: "https://storage.googleapis.com/redso-challenge.appspot.com/catalog/1.jpg")!,
+                        birthDate: Date(),
+                        gender: .male,
+                        counts: UserCount(followers: 1, following: 2, posts: 3),
+                        joinDate: Date())
+        
+        let post = UserPost(postType: .photo,
+                            postURL: URL(string: "https://storage.googleapis.com/redso-challenge.appspot.com/catalog/0.jpg")!,
+                            caption: "it's my first picture",
+                            likeCount: [],
+                            comments: [PostComment(thumbnailImage: URL(string: "https://storage.googleapis.com/redso-challenge.appspot.com/catalog/1.jpg")!, username: "Mark", text: "so good!", createdDate: Date()),
+                                       PostComment(thumbnailImage: URL(string: "https://storage.googleapis.com/redso-challenge.appspot.com/catalog/1.jpg")!, username: "Mike", text: "nice", createdDate: Date())],
+                            createdDate: Date(),
+                            owner: user)
+        
+        self.window?.rootViewController = PostVC(model: post)
+        
         self.window?.makeKeyAndVisible()
     }
 

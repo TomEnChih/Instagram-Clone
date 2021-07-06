@@ -11,11 +11,11 @@ protocol IGFeedPostActionsTableViewCellDelegate: AnyObject {
     func didTapLikeButton()
     func didTapCommentButton()
     func didTapSendButton()
-
 }
 
-class IGFeedPostActionsTableViewCell: UITableViewCell {
 
+class IGFeedPostActionsTableViewCell: UITableViewCell {
+    
     // MARK: - Properties
     
     static let cellKey = "IGFeedPostActionsTableViewCell"
@@ -27,42 +27,36 @@ class IGFeedPostActionsTableViewCell: UITableViewCell {
     private let likeButton: UIButton = {
         let btn = UIButton()
         
-        let config = UIImage.SymbolConfiguration(pointSize: 30, weight: .thin)
+        let config = UIImage.SymbolConfiguration(pointSize: 20, weight: .thin)
         let image = UIImage(systemName: "heart", withConfiguration: config)
         
         btn.setImage(image, for: .normal)
         btn.tintColor = .label
-//        btn.imageView?.contentMode = .scaleAspectFit
-//        btn.contentVerticalAlignment = .fill
-//        btn.contentHorizontalAlignment = .fill
+        //        btn.imageView?.contentMode = .scaleAspectFit
+        //        btn.contentVerticalAlignment = .fill
+        //        btn.contentHorizontalAlignment = .fill
         return btn
     }()
     
     private let commentButton: UIButton = {
         let btn = UIButton()
         
-        let config = UIImage.SymbolConfiguration(pointSize: 30, weight: .thin)
+        let config = UIImage.SymbolConfiguration(pointSize: 20, weight: .thin)
         let image = UIImage(systemName: "message", withConfiguration: config)
         
         btn.setImage(image, for: .normal)
         btn.tintColor = .label
-//        btn.imageView?.contentMode = .scaleAspectFit
-//        btn.contentVerticalAlignment = .fill
-//        btn.contentHorizontalAlignment = .fill
         return btn
     }()
     
     private let sendButton: UIButton = {
         let btn = UIButton()
         
-        let config = UIImage.SymbolConfiguration(pointSize: 30, weight: .thin)
+        let config = UIImage.SymbolConfiguration(pointSize: 20, weight: .thin)
         let image = UIImage(systemName: "paperplane", withConfiguration: config)
         
         btn.setImage(image, for: .normal)
         btn.tintColor = .label
-//        btn.imageView?.contentMode = .scaleAspectFit
-//        btn.contentVerticalAlignment = .fill
-//        btn.contentHorizontalAlignment = .fill
         return btn
     }()
     
@@ -80,7 +74,7 @@ class IGFeedPostActionsTableViewCell: UITableViewCell {
         buttonStackView.snp.makeConstraints { (make) in
             make.height.equalTo(contentView)
             make.centerY.equalTo(self)
-            make.width.equalTo(200)
+            make.width.equalTo(150)
             make.left.equalTo(10)
         }
     }
@@ -91,16 +85,14 @@ class IGFeedPostActionsTableViewCell: UITableViewCell {
         backgroundColor = .systemGray
         selectionStyle = .none
         contentView.addSubview(buttonStackView)
-//        contentView.addSubview(likeButton)
-//        contentView.addSubview(commentButton)
-//        contentView.addSubview(sendButton)
-
+        
         autoLayout()
+        selectionStyle = .none
         
         likeButton.addTarget(self, action: #selector(didTapLikeButton), for: .touchUpInside)
         commentButton.addTarget(self, action: #selector(didTapCommentButton), for: .touchUpInside)
         sendButton.addTarget(self, action: #selector(didTapSendButton), for: .touchUpInside)
-
+        
         
     }
     
@@ -116,6 +108,14 @@ class IGFeedPostActionsTableViewCell: UITableViewCell {
     }
     
     @objc func didTapLikeButton() {
+        
+        if !likeButton.isSelected {
+            likeButton.isSelected = true
+            likeButton.likeImage()
+        } else {
+            likeButton.isSelected = false
+            likeButton.dislikeImage()
+        }
         delegate?.didTapLikeButton()
     }
     
@@ -126,5 +126,23 @@ class IGFeedPostActionsTableViewCell: UITableViewCell {
     @objc func didTapSendButton() {
         delegate?.didTapSendButton()
     }
+    
+}
 
+
+//MARK: - button
+extension UIButton {
+    func dislikeImage() {
+        let config = UIImage.SymbolConfiguration(pointSize: 20, weight: .thin)
+        let image = UIImage(systemName: "heart", withConfiguration: config)
+        self.setImage(image, for: .normal)
+        self.tintColor = UIColor.black
+    }
+    
+    func likeImage() {
+        let config = UIImage.SymbolConfiguration(pointSize: 20, weight: .thin)
+        let image = UIImage(systemName: "heart.fill", withConfiguration: config)
+        self.setImage(image, for: .normal)
+        self.tintColor = UIColor.systemPink
+    }
 }

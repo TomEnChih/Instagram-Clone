@@ -102,7 +102,7 @@ class NotificationFollowEventTableViewCell: UITableViewCell {
         #warning("還要加東西")
         switch model.type {
         case .like(let post):
-            let thumbnail = post.thumbnailImage
+            let thumbnail = post.owner.profilePhoto
 //            followButton.
         case .follow(let state):
             switch state {

@@ -19,7 +19,9 @@ class PostView: UIView {
         tv.register(IGFeedPostHeaderTableViewCell.self, forCellReuseIdentifier: IGFeedPostHeaderTableViewCell.cellKey)
         tv.register(IGFeedPostActionsTableViewCell.self, forCellReuseIdentifier: IGFeedPostActionsTableViewCell.cellKey)
         tv.register(IGFeedPostGeneralTableViewCell.self, forCellReuseIdentifier: IGFeedPostGeneralTableViewCell.cellKey)
-
+        
+        tv.separatorStyle = .none
+        
         return tv
     }()
     

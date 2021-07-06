@@ -26,7 +26,7 @@ class IGFeedPostHeaderTableViewCell: UITableViewCell {
     
     private let profileImageView: UIImageView = {
         let imageView = UIImageView()
-//        imageView.layer.masksToBounds = true
+        imageView.layer.masksToBounds = true
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
@@ -50,7 +50,7 @@ class IGFeedPostHeaderTableViewCell: UITableViewCell {
     // MARK: - Autolayout
     
     func autoLayout() {
-//        profileImageView.layer.cornerRadius = imageViewSize
+        profileImageView.layer.cornerRadius = imageViewSize/2
 
         profileImageView.snp.makeConstraints { (make) in
             make.centerY.equalTo(contentView)
@@ -60,7 +60,7 @@ class IGFeedPostHeaderTableViewCell: UITableViewCell {
         
         usernameLabel.snp.makeConstraints { (make) in
             make.centerY.equalTo(contentView)
-            make.left.equalTo(profileImageView.snp.right).offset(10)
+            make.left.equalTo(profileImageView.snp.right).offset(15)
         }
         
         moreButton.snp.makeConstraints { (make) in
@@ -76,12 +76,13 @@ class IGFeedPostHeaderTableViewCell: UITableViewCell {
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        backgroundColor = .systemRed
+//        backgroundColor = .systemRed
         contentView.addSubview(profileImageView)
         contentView.addSubview(usernameLabel)
         contentView.addSubview(moreButton)
         
         autoLayout()
+        selectionStyle = .none
         
         moreButton.addTarget(self, action: #selector(didTapMoreButton), for: .touchUpInside)
         
@@ -96,7 +97,12 @@ class IGFeedPostHeaderTableViewCell: UITableViewCell {
     public func configure(with model: User) {
         // configure the cell
         usernameLabel.text = model.username
-        profileImageView.image = UIImage(systemName: "person")
+        
+        let data = try? Data(contentsOf: model.profilePhoto)
+        if let imageData = data {
+            let image = UIImage(data: imageData)
+            profileImageView.image = image!
+        }
     }
     
     @objc func didTapMoreButton() {
