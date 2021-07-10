@@ -17,7 +17,6 @@ class ProfileView: UIView {
         layout.minimumLineSpacing = 1
         layout.minimumInteritemSpacing = 1
         layout.sectionInset = UIEdgeInsets(top: 0, left: 1, bottom: 0, right: 1) 
-//        let fullScreenSize = UIScreen.main.bounds.size
 //        layout.itemSize = CGSize(width: fullScreenSize.width/3, height: fullScreenSize.height/5)
         
         var collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)

@@ -13,7 +13,8 @@ public class AuthManager {
     
     //MARK: - Public
     
-    public func registerNewUser(username: String,
+    public func registerNewUser(profileImage: UIImage,
+                                username: String,
                                 email: String,
                                 password: String,
                                 completion: @escaping (Bool)->Void) {
@@ -33,24 +34,32 @@ public class AuthManager {
                         completion(false)
                         return
                     }
-                    
-                    // insert into database
-                    DatabaseManager.shared.insertNewUser(with: email, username: username) { (inserted) in
-                        if inserted {
-                            completion(true)
-                            return
-                        } else {
-                            // failed to insert to database
-                            completion(false)
-                            return
+                    StorageManager.shared.uploadUserProfileImage(with: profileImage) { (urlString) in
+                        switch urlString {
+                        case .success(let imageString):
+                            
+                            // insert into database
+                            DatabaseManager.shared.insertNewUser(urlString: imageString, with: email, username: username) { (inserted) in
+                                if inserted {
+                                    completion(true)
+                                    return
+                                } else {
+                                    // failed to insert to database
+                                    completion(false)
+                                    return
+                                }
+                            }
+                            
+                        case .failure(let error):
+                            print(error)
                         }
+                        
                     }
-                    
                 }
             }
             else {
                 // either username or email does not exist
-               completion(false)
+                completion(false)
             }
         }
         

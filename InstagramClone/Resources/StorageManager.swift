@@ -32,4 +32,29 @@ public class StorageManager {
         }
     }
     
+    public func uploadUserProfileImage(with image: UIImage,completion: @escaping(Result<String,Error>)->Void) {
+        guard let uploadData = image.jpegData(compressionQuality: 0.3) else {
+            return
+        }
+        
+        let fileName = UUID().uuidString
+        let ref = bucket.child("profile_images").child(fileName)
+        
+        ref.putData(uploadData, metadata: nil) { (metaData, error) in
+            guard error == nil else {
+//                print("Failed to upload profile image", error)
+                completion(.failure(error!))
+                return
+            }
+            
+            ref.downloadURL(completion: { (url, error) in
+                guard let downloadURL = url else { return }
+                let downloadURLString = downloadURL.absoluteString
+                completion(.success(downloadURLString))
+            })
+            
+        }
+        
+    }
+    
 }

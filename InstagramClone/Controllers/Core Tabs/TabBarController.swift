@@ -7,41 +7,69 @@
 
 import UIKit
 
-class TabBarController: UITabBarController {
-
+class TabBarController: UITabBarController, UITabBarControllerDelegate {
+    
+    // MARK: - Properties
+    
+    // MARK: - Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.delegate = self
         setTabBar()
     }
     
-
-    func setTabBar() {
+    // MARK: - Methods
+    
+    func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
+        
+        let index = viewControllers?.firstIndex(of: viewController)
+        
+        if index == 2 {
+            let vc = PhotoSelectorController()
+            let navController = UINavigationController(rootViewController: vc)
+            navController.modalPresentationStyle = .fullScreen
+            present(navController, animated: true, completion: nil)
+            
+            return false
+        }
+        
+        return true
+    }
+    
+    private func setTabBar() {
+        
         let homeVC = HomeVC()
-        let navHomeVC = UINavigationController(rootViewController: homeVC)
+        let navHomeVC = templateNavController(homeVC, unselectedImage: "house", selectedImage: "house.fill")
         
         let exploreVC = ExploreVC()
-        let navExploreVC = UINavigationController(rootViewController: exploreVC)
+        let navExploreVC = templateNavController(exploreVC, unselectedImage: "magnifyingglass", selectedImage: "magnifyingglass")
         
-        let cameraVC = CameraVC()
-        let navProduceVC = UINavigationController(rootViewController: cameraVC)
+        let cameraVC = PhotoSelectorController()
+        let navProduceVC = templateNavController(cameraVC, unselectedImage: "plus.square", selectedImage: "plus.square.fill")
         
         let notificationsVC = NotificationsVC()
-        let navNotificationsVC = UINavigationController(rootViewController: notificationsVC)
+        let navNotificationsVC = templateNavController(notificationsVC, unselectedImage: "bell", selectedImage: "bell.fill")
         
         let profileVC = ProfileVC()
-        let navProfileVC = UINavigationController(rootViewController: profileVC)
+        let navProfileVC = templateNavController(profileVC, unselectedImage: "person", selectedImage: "person.fill")
         
-        navHomeVC.tabBarItem.image = UIImage(systemName: "house")
-        
-        navExploreVC.tabBarItem.image = UIImage(systemName: "magnifyingglass")
-                
-        navProduceVC.tabBarItem.image = UIImage(systemName: "plus.square")
-        
-        navNotificationsVC.tabBarItem.image = UIImage(systemName:"bell")
-        
-        navProfileVC.tabBarItem.image = UIImage(systemName: "person")
         
         self.viewControllers = [navHomeVC,navExploreVC,navProduceVC,navNotificationsVC,navProfileVC]
     }
-
+    
+    
+    
+    private func templateNavController(_ viewController: UIViewController,
+                                       unselectedImage: String,
+                                       selectedImage: String)-> UINavigationController {
+        
+        let nav = UINavigationController(rootViewController: viewController)
+        
+        nav.tabBarItem.image = UIImage(systemName: unselectedImage)
+        nav.tabBarItem.selectedImage = UIImage(systemName: selectedImage)
+        
+        return nav
+    }
+    
 }

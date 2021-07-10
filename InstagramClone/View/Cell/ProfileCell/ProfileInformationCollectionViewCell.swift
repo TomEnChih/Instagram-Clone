@@ -28,11 +28,12 @@ class ProfileInformationCollectionViewCell: UICollectionViewCell {
 
     // MARK: - IBElement
     
-    var userImageView: UIView = {
-        let imageView = UIView()
+    private let userImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.layer.masksToBounds = true
         imageView.layer.cornerRadius = 40
-//        imageView.clipsToBounds = true
-        imageView.backgroundColor = #colorLiteral(red: 0.9529411793, green: 0.6862745285, blue: 0.1333333403, alpha: 1)
+        imageView.contentMode = .scaleAspectFit
+        imageView.backgroundColor = .red
         return imageView
     }()
 
@@ -133,7 +134,7 @@ class ProfileInformationCollectionViewCell: UICollectionViewCell {
         let button = UIButton()
         button.setTitle("編輯個人資料", for: .normal)
         button.setTitleColor(#colorLiteral(red: 0, green: 0, blue: 0, alpha: 1), for: .normal)
-        button.titleLabel?.font = UIFont.italicSystemFont(ofSize: 12)
+        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 14)
         button.isEnabled = true
         button.layer.borderWidth = 1
         button.layer.cornerRadius = 10

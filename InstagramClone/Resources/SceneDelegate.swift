@@ -18,7 +18,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
         guard let window = (scene as? UIWindowScene) else { return }
         self.window = UIWindow(windowScene: window)
-//        self.window?.rootViewController = TabBarController()
+//        self.window?.rootViewController = EditProfileVC()
+        self.window?.rootViewController = TabBarController()
+
+//        self.window?.rootViewController = LoginVC()
+
         
         let user = User(name: (first: "String", last: "tom"),
                         username: "tom", bio: "hi,my name is tom",
@@ -37,7 +41,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                             createdDate: Date(),
                             owner: user)
         
-        self.window?.rootViewController = PostVC(model: post)
+//        self.window?.rootViewController = PostVC(model: post)
+//        self.window?.rootViewController = HomeVC()
+
         
         self.window?.makeKeyAndVisible()
     }

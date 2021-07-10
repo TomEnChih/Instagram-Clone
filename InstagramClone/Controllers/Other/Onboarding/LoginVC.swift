@@ -25,6 +25,11 @@ class LoginVC: UIViewController {
     
     // MARK: - Methods
     
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        .lightContent
+    }
+    
+    
     func buttonActionFunction() {
         
         loginView.LoginButtonAction = {

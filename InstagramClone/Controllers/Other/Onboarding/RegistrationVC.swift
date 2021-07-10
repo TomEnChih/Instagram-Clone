@@ -27,6 +27,27 @@ class RegistrationVC: UIViewController {
     // MARK: - Methods
     func buttonActionFunction() {
         
+        registerView.plusPhotoButtonAction = {
+            let imagePickerController = UIImagePickerController()
+            imagePickerController.delegate = self
+            imagePickerController.allowsEditing = true
+            self.present(imagePickerController, animated: true, completion: nil)
+        }
+        
+        
+        registerView.textFieldAction = {
+            guard let username = self.registerView.usernameField.text, !username.isEmpty,
+                  let email = self.registerView.emailField.text,!email.isEmpty,
+                  let password = self.registerView.passswordField.text,!password.isEmpty,password.count >= 8
+                  else {
+                self.registerView.registerButton.backgroundColor = UIColor(displayP3Red: 149/255, green: 144/255, blue: 204/255, alpha: 0.3)
+                self.registerView.registerButton.isEnabled = false
+                return
+            }
+            self.registerView.registerButton.backgroundColor = .systemBlue
+            self.registerView.registerButton.isEnabled = true
+        }
+        
         registerView.signUpButtonAction = {
             self.registerView.usernameField.resignFirstResponder()
             self.registerView.emailField.resignFirstResponder()
@@ -34,18 +55,17 @@ class RegistrationVC: UIViewController {
             
             guard let username = self.registerView.usernameField.text, !username.isEmpty,
                   let email = self.registerView.emailField.text,!email.isEmpty,
-                  let password = self.registerView.passswordField.text,!password.isEmpty,password.count >= 8
+                  let password = self.registerView.passswordField.text,!password.isEmpty,password.count >= 8,
+                  let image = self.registerView.plusPhotoButton.image(for: .normal)
                   else { return }
             
-            AuthManager.shared.registerNewUser(username: username, email: email, password: password) { (registered) in
-                DispatchQueue.main.async {
+            AuthManager.shared.registerNewUser(profileImage: image, username: username, email: email, password: password) { (registered) in
                     if registered {
                         // good to go
-                        #warning("還沒做")
+                        self.dismiss(animated: true, completion: nil)
                     } else {
                         // failed
                     }
-                }
             }
             
         }
@@ -54,6 +74,7 @@ class RegistrationVC: UIViewController {
 }
 
 //MARK: - TextFieldDelegate
+
 extension RegistrationVC: UITextFieldDelegate {
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
@@ -68,6 +89,40 @@ extension RegistrationVC: UITextFieldDelegate {
         }
         
         return true
+    }
+    
+}
+
+//MARK: - ImagePickerControllerDelegate
+
+extension RegistrationVC: UIImagePickerControllerDelegate,UINavigationControllerDelegate {
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        
+        var selectedImageFromPicker: UIImage?
+        
+        if let editedImage = info[UIImagePickerController.InfoKey(rawValue: "UIImagePickerControllerEditedImage")] as? UIImage {
+            
+            selectedImageFromPicker = editedImage
+            
+        } else if let originalImage = info[UIImagePickerController.InfoKey(rawValue: "UIImagePickerControllerEditedImage")] as? UIImage {
+            
+            selectedImageFromPicker = originalImage
+
+        }
+        
+        if let selectedImage = selectedImageFromPicker {
+            pickImage(image: selectedImage)
+        }
+    }
+    
+    private func pickImage(image: UIImage) {
+        registerView.plusPhotoButton.setImage(image, for: .normal)
+        registerView.plusPhotoButton.layer.masksToBounds = true
+        registerView.plusPhotoButton.layer.cornerRadius = registerView.plusPhotoButton.frame.width/2
+        registerView.plusPhotoButton.layer.borderColor = UIColor.black.cgColor
+        registerView.plusPhotoButton.layer.borderWidth = 3
+        dismiss(animated: true, completion: nil)
     }
     
 }

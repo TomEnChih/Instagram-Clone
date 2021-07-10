@@ -101,7 +101,7 @@ class IGFeedPostHeaderTableViewCell: UITableViewCell {
         let data = try? Data(contentsOf: model.profilePhoto)
         if let imageData = data {
             let image = UIImage(data: imageData)
-            profileImageView.image = image!
+            profileImageView.image = image
         }
     }
     

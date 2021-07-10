@@ -84,16 +84,17 @@ extension PostVC: UITableViewDelegate,UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        switch renderModels[section].renderType {
-        case .header(_):
-            return 1
-        case .primaryContent(_):
-            return 1
-        case .actions(_):
-            return 1
-        case .caption(_):
-            return 1
-        }
+//        switch renderModels[section].renderType {
+//        case .header(_):
+//            return 1
+//        case .primaryContent(_):
+//            return 1
+//        case .actions(_):
+//            return 1
+//        case .caption(_):
+//            return 1
+//        }
+        1
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

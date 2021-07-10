@@ -76,7 +76,7 @@ class LoginView: UIView {
         let button = UIButton()
         button.setTitle("Log In", for: .normal)
         button.setTitleColor(.white, for: .normal)
-//        button.isEnabled = true
+        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 20)
         button.layer.masksToBounds = true
         button.layer.cornerRadius = 8.0
         button.backgroundColor = .systemBlue
@@ -85,13 +85,12 @@ class LoginView: UIView {
     
     let createAccountButton: UIButton = {
         let button = UIButton()
-        button.setTitle("New User? Create an Account", for: .normal)
-        button.setTitleColor(.label, for: .normal)
-//        button.isEnabled = true
-//        button.layer.masksToBounds = true
-//        button.layer.cornerRadius = 8.0
-//        button.backgroundColor = .systemBlue
-        button.addTarget(self, action: #selector(didTapCreateAccountButton), for: .touchUpInside)
+        
+        let title = NSMutableAttributedString(string: "New User?  ", attributes: [NSMutableAttributedString.Key.font:UIFont.systemFont(ofSize: 15),NSAttributedString.Key.foregroundColor:UIColor.lightGray])
+        let subTitle = NSMutableAttributedString(string: "Create an Account", attributes: [NSMutableAttributedString.Key.font:UIFont.boldSystemFont(ofSize: 17) ,NSAttributedString.Key.foregroundColor:UIColor.systemBlue])
+
+        title.append(subTitle)
+        button.setAttributedTitle(title, for: .normal)
         return button
     }()
     
@@ -99,7 +98,6 @@ class LoginView: UIView {
         let button = UIButton()
         button.setTitle("Terms of Servicd", for: .normal)
         button.setTitleColor(.secondaryLabel, for: .normal)
-        button.addTarget(self, action: #selector(didTapTermsButton), for: .touchUpInside)
         return button
     }()
     
@@ -107,7 +105,6 @@ class LoginView: UIView {
         let button = UIButton()
         button.setTitle("Privacy Policy", for: .normal)
         button.setTitleColor(.secondaryLabel, for: .normal)
-        button.addTarget(self, action: #selector(didTapPrivacyButton), for: .touchUpInside)
         return button
     }()
     

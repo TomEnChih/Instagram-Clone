@@ -13,26 +13,100 @@ class ProfileTabsCollectionReusableView: UICollectionReusableView {
     
     static let cellKey = "ProfileTabsCollectionReusableView"
     
-    // MARK: - IBOutlets
+    // MARK: - IBElements
+    private let userImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.layer.masksToBounds = true
+        imageView.layer.cornerRadius = 40
+        imageView.contentMode = .scaleAspectFit
+        imageView.backgroundColor = .black
+        return imageView
+    }()
+
+    
+    let postButton: UIButton = {
+        let button = UIButton()
+        button.setTitle("貼文/n11", for: .normal)
+        button.titleLabel?.font = UIFont.italicSystemFont(ofSize: 15)
+        button.setTitleColor(#colorLiteral(red: 0, green: 0, blue: 0, alpha: 1), for: .normal)
+        return button
+    }()
+    
+    let followersButton: UIButton = {
+        let button = UIButton()
+        button.setTitle("粉絲\n12", for: .normal)
+        button.titleLabel?.numberOfLines = 0
+        
+//        let attributedText = NSMutableAttributedString(string: "11\n",attributes: [NSMutableAttributedString:UIFont.boldSystemFont(ofSize: 14)])
+        
+        
+//        button.setAttributedTitle(<#T##title: NSAttributedString?##NSAttributedString?#>, for: .normal)
+        button.titleLabel?.font = UIFont.italicSystemFont(ofSize: 15)
+        button.setTitleColor(#colorLiteral(red: 0, green: 0, blue: 0, alpha: 1), for: .normal)
+        return button
+    }()
+    
+//    let followeringButton: UIButton = {
+//        let button = UIButton()
+//        button.setTitle("追蹤中/n13", for: .normal)
+//        button.titleLabel?.font = UIFont.italicSystemFont(ofSize: 15)
+//        button.setTitleColor(#colorLiteral(red: 0, green: 0, blue: 0, alpha: 1), for: .normal)
+//        return button
+//    }()
+    
+    let followeringButton: UILabel = {
+        let label = UILabel()
+        label.text = "11\n追蹤"
+        label.numberOfLines = 0
+        label.textColor = .black
+        return label
+    }()
+    
+    lazy var tabsStackView: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [postButton,followersButton,followeringButton])
+        stackView.axis = .horizontal
+        stackView.distribution = .fillEqually
+        stackView.alignment = .top
+        stackView.spacing = 0
+        return stackView
+    }()
+    
+    let nameLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 15)
+        label.textColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
+        return label
+    }()
+    
+    let editPersonInforButton: UIButton = {
+        let button = UIButton()
+        button.setTitle("編輯個人資料", for: .normal)
+        button.setTitleColor(#colorLiteral(red: 0, green: 0, blue: 0, alpha: 1), for: .normal)
+        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 14)
+        button.layer.borderWidth = 1
+        button.layer.cornerRadius = 3
+        return button
+    }()
+    
+    
+    
      private let gridButton: UIButton = {
         let button = UIButton()
         button.clipsToBounds = true
-//        button.setBackgroundImage(UIImage(systemName: "square.grid.2x2"), for: .normal)
         button.setImage(UIImage(systemName: "square.grid.2x2"), for: .normal)
-        button.imageView?.contentMode = .scaleAspectFit
-        button.contentVerticalAlignment = .fill
-        button.contentHorizontalAlignment = .fill
+//        button.imageView?.contentMode = .scaleAspectFit
+//        button.contentVerticalAlignment = .fill
+//        button.contentHorizontalAlignment = .fill
         return button
     }()
     
     private let taggedButton: UIButton = {
         let button = UIButton()
         button.clipsToBounds = true
-//        button.setBackgroundImage(UIImage(systemName: "tag"), for: .normal)
         button.setImage(UIImage(systemName: "tag"), for: .normal)
-        button.imageView?.contentMode = .scaleAspectFit
-        button.contentVerticalAlignment = .fill
-        button.contentHorizontalAlignment = .fill
+//        button.imageView?.contentMode = .scaleAspectFit
+//        button.contentVerticalAlignment = .fill
+//        button.contentHorizontalAlignment = .fill
         return button
     }()
     
@@ -46,10 +120,31 @@ class ProfileTabsCollectionReusableView: UICollectionReusableView {
     // MARK: - Autolayout
     
     func autoLayout() {
-        tabStackView.snp.makeConstraints { (make) in
-            make.left.right.equalTo(self)
-            make.centerY.equalTo(self)
+        userImageView.snp.makeConstraints { (make) in
+            make.top.equalTo(self).offset(10)
+            make.left.equalTo(self).offset(10)
+            make.size.equalTo(80)
+        }
+        
+        tabsStackView.snp.makeConstraints { (make) in
+            make.top.equalTo(self).offset(10)
+            make.left.equalTo(userImageView.snp.right).offset(10)
+            make.right.equalTo(self).offset(-10)
+            make.height.equalTo(50)
+        }
+        
+        editPersonInforButton.snp.makeConstraints { (make) in
+//            make.top.equalTo(userImageView.snp.bottom).offset(20)
             make.height.equalTo(30)
+            make.left.equalTo(self).offset(10)
+            make.right.equalTo(self).offset(-10)
+            make.bottom.equalTo(tabStackView.snp.top).offset(-10)
+        }
+        
+        tabStackView.snp.makeConstraints { (make) in
+            make.bottom.equalTo(self)
+            make.left.right.equalTo(self)
+            make.height.equalTo(50)
         }
     }
     
@@ -58,6 +153,9 @@ class ProfileTabsCollectionReusableView: UICollectionReusableView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         backgroundColor = .green
+        addSubview(userImageView)
+        addSubview(tabsStackView)
+        addSubview(editPersonInforButton)
         addSubview(tabStackView)
         autoLayout()
         
