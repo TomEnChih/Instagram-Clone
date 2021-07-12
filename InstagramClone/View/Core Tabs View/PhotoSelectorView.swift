@@ -21,19 +21,19 @@ class PhotoSelectorView: UIView {
         layout.minimumLineSpacing = 1
         layout.sectionInset = UIEdgeInsets(top: 1, left: 1, bottom: 0, right: 1)
         
-        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
         
-        collectionView.register(PhotoSelectorCell.self, forCellWithReuseIdentifier: UICollectionView.id)
-        collectionView.register(PhotoSelectorHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: PhotoSelectorHeader.id)
+        cv.register(PhotoSelectorCell.self, forCellWithReuseIdentifier: PhotoSelectorCell.id)
+        cv.register(PhotoSelectorHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: PhotoSelectorHeader.id)
         
-        collectionView.backgroundColor = .white
+        cv.backgroundColor = .white
         
-        return collectionView
+        return cv
     }()
     
     // MARK: - Autolayout
     
-    func autoLayout() {
+    private func autoLayout() {
         
         collectionView.snp.makeConstraints { (make) in
             make.edges.equalTo(self)

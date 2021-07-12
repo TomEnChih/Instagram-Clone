@@ -8,7 +8,7 @@
 import UIKit
 import SafariServices
 
-class LoginVC: UIViewController {
+class LoginController: UIViewController {
 
     // MARK: - Properties
     
@@ -69,7 +69,7 @@ class LoginVC: UIViewController {
         }
         
         loginView.CreateAccountButtonAction = {
-            let vc = RegistrationVC()
+            let vc = RegistrationController()
             vc.title = "創建新帳號"
             
             self.present(UINavigationController(rootViewController: vc), animated: true, completion: nil)
@@ -102,7 +102,7 @@ class LoginVC: UIViewController {
 }
 
     //MARK: - TextFieldDelegate
-extension LoginVC: UITextFieldDelegate {
+extension LoginController: UITextFieldDelegate {
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         if textField == loginView.usernameEmailField {

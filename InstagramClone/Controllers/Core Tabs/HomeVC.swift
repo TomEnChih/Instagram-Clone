@@ -120,7 +120,7 @@ class HomeVC: UIViewController {
         // Check auth status
         if Auth.auth().currentUser == nil {
             // Show log in
-            let loginVC = LoginVC()
+            let loginVC = LoginController()
             loginVC.modalPresentationStyle = .fullScreen
             present(loginVC, animated: false, completion: nil)
         }
@@ -143,7 +143,7 @@ extension HomeVC: UITableViewDelegate,UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 //        let sectionModel = feedRenderModels[indexPath.section]
-//        let cell = tableView.dequeueReusableCell(withIdentifier: IGFeedPostTableViewCell.cellKey, for: indexPath)
+//        let cell = tableView.dequeueReusableCell(withIdentifier: IGFeedPostTableViewCell.id, for: indexPath)
         
         switch feedRenderModels[indexPath.section][indexPath.row].renderType {
         case .header(let user):

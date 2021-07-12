@@ -76,11 +76,27 @@ enum Profile: Int {
 
 
 struct UserTest {
+    
+    let email: String
     let username: String
     let profileImageURL: String
     
-    init(dictionary:[String:Any]) {
+    init(email: String,dictionary: [String:Any]) {
+        self.email = email 
         self.username = dictionary["username"] as? String ?? ""
         self.profileImageURL = dictionary["profileImageURL"] as? String ?? ""
+    }
+}
+
+struct PostTest {
+    
+    let user: UserTest
+    let imageURL: String
+    let caption: String
+    
+    init(user: UserTest,dictionary: [String:Any]) {
+        self.user = user
+        self.imageURL = dictionary["imageURL"] as? String ?? ""
+        self.caption = dictionary["caption"] as? String ?? ""
     }
 }

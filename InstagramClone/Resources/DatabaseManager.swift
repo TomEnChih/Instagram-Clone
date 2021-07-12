@@ -29,7 +29,7 @@ public class DatabaseManager {
     //   - email: String representring email
     //   - username: String representring username
     public func insertNewUser(urlString imageSting: String,with email: String,username: String, completion: @escaping (Bool)->Void) {
-        let key = email.safeDatabaseKey().lowercased() // 因為auth會自動把大寫變小寫,所以database要全變小寫
+        let key = email.safeDatabaseKey().lowercased() /// 因為auth會自動把大寫變小寫,所以database要全變小寫
         let value = ["profileImageURL":imageSting,"username":username] as [String:Any]
         
         database.child("user").child(key).updateChildValues(value) { error, _ in

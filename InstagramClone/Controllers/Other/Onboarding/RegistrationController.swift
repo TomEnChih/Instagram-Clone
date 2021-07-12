@@ -7,7 +7,7 @@
 
 import UIKit
 
-class RegistrationVC: UIViewController {
+class RegistrationController: UIViewController {
     
     // MARK: - Properties
     
@@ -75,7 +75,7 @@ class RegistrationVC: UIViewController {
 
 //MARK: - TextFieldDelegate
 
-extension RegistrationVC: UITextFieldDelegate {
+extension RegistrationController: UITextFieldDelegate {
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         if textField == registerView.usernameField {
@@ -95,7 +95,7 @@ extension RegistrationVC: UITextFieldDelegate {
 
 //MARK: - ImagePickerControllerDelegate
 
-extension RegistrationVC: UIImagePickerControllerDelegate,UINavigationControllerDelegate {
+extension RegistrationController: UIImagePickerControllerDelegate,UINavigationControllerDelegate {
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         

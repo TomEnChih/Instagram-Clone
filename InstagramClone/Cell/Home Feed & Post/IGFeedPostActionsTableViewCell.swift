@@ -32,9 +32,7 @@ class IGFeedPostActionsTableViewCell: UITableViewCell {
         
         btn.setImage(image, for: .normal)
         btn.tintColor = .label
-        //        btn.imageView?.contentMode = .scaleAspectFit
-        //        btn.contentVerticalAlignment = .fill
-        //        btn.contentHorizontalAlignment = .fill
+        
         return btn
     }()
     

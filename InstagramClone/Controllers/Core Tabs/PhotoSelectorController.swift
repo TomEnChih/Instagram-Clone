@@ -47,8 +47,8 @@ class PhotoSelectorController: UIViewController {
     }
     
     @objc func handleCancel() {
-        self.tabBarController?.selectedIndex = 0
         dismiss(animated: true, completion: nil)
+        self.tabBarController?.selectedIndex = 0
     }
     
     @objc func handleNext() {
@@ -119,7 +119,7 @@ extension PhotoSelectorController: UICollectionViewDelegateFlowLayout,UICollecti
         
         let image = images[indexPath.item]
         
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: UICollectionView.id, for: indexPath) as! PhotoSelectorCell
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PhotoSelectorCell.id, for: indexPath) as! PhotoSelectorCell
         
         cell.photoImageView.image = image
         

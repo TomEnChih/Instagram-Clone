@@ -104,7 +104,7 @@ class SettingsVC: UIViewController {
                 DispatchQueue.main.async {
                     if success {
                         //present log in
-                        let loginVC = LoginVC()
+                        let loginVC = LoginController()
                         loginVC.modalPresentationStyle = .fullScreen
                         self.present(loginVC, animated: true) {
                             /// 不然 ProfileVC 會停在 SettingsVC

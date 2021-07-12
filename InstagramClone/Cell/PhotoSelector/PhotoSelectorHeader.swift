@@ -25,7 +25,7 @@ class PhotoSelectorHeader: UICollectionReusableView {
     
     // MARK: - Autolayout
     
-    func autoLayout() {
+    private func autoLayout() {
         
         photoImageView.snp.makeConstraints { (make) in
             make.edges.equalTo(self)

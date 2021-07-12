@@ -39,23 +39,23 @@ class TabBarController: UITabBarController, UITabBarControllerDelegate {
     
     private func setTabBar() {
         
-        let homeVC = HomeVC()
+        let homeVC = HomeController()
         let navHomeVC = templateNavController(homeVC, unselectedImage: "house", selectedImage: "house.fill")
         
-        let exploreVC = ExploreVC()
-        let navExploreVC = templateNavController(exploreVC, unselectedImage: "magnifyingglass", selectedImage: "magnifyingglass")
+        let userSearchVC = UserSearchController()
+        let navUserSearchVC = templateNavController(userSearchVC, unselectedImage: "magnifyingglass", selectedImage: "magnifyingglass")
         
-        let cameraVC = PhotoSelectorController()
-        let navProduceVC = templateNavController(cameraVC, unselectedImage: "plus.square", selectedImage: "plus.square.fill")
+        let photoSelectorVC = PhotoSelectorController()
+        let navProduceVC = templateNavController(photoSelectorVC, unselectedImage: "plus.square", selectedImage: "plus.square.fill")
         
         let notificationsVC = NotificationsVC()
         let navNotificationsVC = templateNavController(notificationsVC, unselectedImage: "bell", selectedImage: "bell.fill")
         
-        let profileVC = ProfileVC()
+        let profileVC = UserProfileController()
         let navProfileVC = templateNavController(profileVC, unselectedImage: "person", selectedImage: "person.fill")
         
         
-        self.viewControllers = [navHomeVC,navExploreVC,navProduceVC,navNotificationsVC,navProfileVC]
+        self.viewControllers = [navHomeVC,navUserSearchVC,navProduceVC,navNotificationsVC,navProfileVC]
     }
     
     
