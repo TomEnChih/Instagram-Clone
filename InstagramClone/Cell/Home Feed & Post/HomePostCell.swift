@@ -7,6 +7,12 @@
 
 import UIKit
 
+protocol HomePostButtonDelegate: AnyObject {
+    func didTapLike()
+    func didTapComment(post: PostTest)
+}
+
+
 class HomePostCell: UICollectionViewCell {
     
     // MARK: - Properties
@@ -30,6 +36,8 @@ class HomePostCell: UICollectionViewCell {
             setupAttributedCaption()
         }
     }
+    
+    weak var delegate: HomePostButtonDelegate?
     
     // MARK: - IBElements
     
@@ -116,7 +124,7 @@ class HomePostCell: UICollectionViewCell {
         return btn
     }()
     
-    let captionLabel: UILabel = {
+    private let captionLabel: UILabel = {
         let label = UILabel()
         label.numberOfLines = 0
         return label
@@ -190,6 +198,7 @@ class HomePostCell: UICollectionViewCell {
         addSubview(bookmarlButton)
         addSubview(captionLabel)
         autoLayout()
+        commentButton.addTarget(self, action: #selector(handleComment), for: .touchUpInside)
     }
     
     required init?(coder: NSCoder) {
@@ -210,9 +219,21 @@ class HomePostCell: UICollectionViewCell {
         
         attributedText.append(NSMutableAttributedString(string: "\n\n", attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 4)]))
         
-        attributedText.append(NSMutableAttributedString(string: "1 week age", attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 14),NSAttributedString.Key.foregroundColor:UIColor.lightGray]))
+        
+        let timeAgoDisplay = post.creationDate.description
+        attributedText.append(NSMutableAttributedString(string: timeAgoDisplay, attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 14),NSAttributedString.Key.foregroundColor:UIColor.lightGray]))
         
         captionLabel.attributedText = attributedText
+    }
+    
+    
+    @objc func handleLike() {
+        delegate?.didTapLike()
+    }
+    
+    @objc func handleComment() {
+        guard let post = post else { return }
+        delegate?.didTapComment(post: post)
     }
     
 }

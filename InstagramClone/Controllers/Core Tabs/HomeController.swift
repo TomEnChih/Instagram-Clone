@@ -22,19 +22,31 @@ class HomeController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view = homeView
+        handleNotAuthenticated()
         
         homeView.homeCollectionView.delegate = self
         homeView.homeCollectionView.dataSource = self
         
         setupNavigationItems()
-        handleNotAuthenticated()
         fetchPosts()
+//        fetchFollowingUserEmail()
+        
+        let refreshController = UIRefreshControl()
+        homeView.homeCollectionView.addSubview(refreshController)
+        refreshController.tintColor = .black
+        refreshController.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(handleUpdateFeed), name: SharePhotoController.updateFeedNotificationName , object: nil)
     }
     
     // MARK: - Methods
     
     private func setupNavigationItems() {
-        navigationItem.titleView = UIImageView(image: UIImage(named: "text"))
+        let titleImageView = UIImageView(image: UIImage(named: "text"))
+        titleImageView.contentMode = .scaleAspectFit
+        navigationItem.titleView = titleImageView
+        
+        navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "camera"), style: .plain, target: self, action: #selector(handleCamera))
     }
     
     private func handleNotAuthenticated() {
@@ -53,6 +65,7 @@ class HomeController: UIViewController {
         Database.fetchUserWithEmail(with: email) { user in
             
             self.fetchPostsWithUser(with: user)
+            self.fetchFollowingUserEmail()
         }
     }
     
@@ -64,22 +77,54 @@ class HomeController: UIViewController {
         
         ref.observeSingleEvent(of: .value) { (snapshot) in
             
+            self.homeView.homeCollectionView.refreshControl?.endRefreshing()
+            
             guard let dictionaries = snapshot.value as? [String:Any] else { return }
             
             dictionaries.forEach { (key, value) in
-                print("key \(key), value \(value)")
-                
                 guard let dictionary = value as? [String:Any] else { return }
                 
-                let post = PostTest(user: user, dictionary: dictionary)
-                self.posts.append(post)
+                var post = PostTest(user: user, dictionary: dictionary)
+                post.id = key ///用於 comment
                 
+                self.posts.append(post)
             }
-            
+            self.posts.sort { (p1, p2) -> Bool in
+                return p1.creationDate.compare(p2.creationDate) == .orderedDescending
+            }
             self.homeView.homeCollectionView.reloadData()
         }
     }
     
+    private func fetchFollowingUserEmail() {
+        guard let email = Auth.auth().currentUser?.email else { return }
+        let safeEmail = email.safeDatabaseKey()
+        
+        Database.database().reference().child("following").child(safeEmail).observeSingleEvent(of: .value) { (snapshot) in
+            guard let userEmailDictionary = snapshot.value as? [String:Any] else { return }
+            
+            userEmailDictionary.forEach { (key,value) in
+                Database.fetchUserWithEmail(with: key) { (user) in
+                    self.fetchPostsWithUser(with: user)
+                }
+            }
+        }
+    }
+    
+    @objc func handleRefresh() {
+        print("handling refresh ...")
+        posts.removeAll()
+        fetchPosts()
+    }
+    
+    @objc func handleUpdateFeed() {
+        handleRefresh()
+    }
+    
+    @objc func handleCamera() {
+        let vc = CameraController()
+        present(vc, animated: true, completion: nil)
+    }
     
 }
 
@@ -94,6 +139,7 @@ extension HomeController: UICollectionViewDataSource,UICollectionViewDelegateFlo
         
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: HomePostCell.id, for: indexPath) as! HomePostCell
         
+        cell.delegate = self
         cell.post = posts[indexPath.item]
         
         return cell
@@ -107,5 +153,23 @@ extension HomeController: UICollectionViewDataSource,UICollectionViewDelegateFlo
         
         return CGSize(width: view.frame.width, height: height)
     }
+    
+}
+
+//MARK: - HomePostButtonDelegate
+extension HomeController: HomePostButtonDelegate {
+    
+    func didTapLike() {
+        
+    }
+    
+    func didTapComment(post: PostTest) {
+        print(post.caption)
+        let vc = PostCommentVC()
+        vc.post = post
+        vc.modalPresentationStyle = .fullScreen
+        navigationController?.pushViewController(vc, animated: true)
+    }
+    
     
 }

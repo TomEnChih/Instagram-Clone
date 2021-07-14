@@ -6,6 +6,8 @@
 //
 
 import UIKit
+import FirebaseAuth
+import FirebaseDatabase
 
 class UserProfileHeader: UICollectionReusableView {
     
@@ -19,6 +21,9 @@ class UserProfileHeader: UICollectionReusableView {
             guard let profileImageURL = user?.profileImageURL else { return }
             
             profileImageView.loadingImage(url: URL(string: profileImageURL)!)
+            usernameLabel.text = user?.username
+            
+            setEditFollowButton()
         }
     }
     
@@ -66,7 +71,6 @@ class UserProfileHeader: UICollectionReusableView {
         let label = UILabel()
         label.font = UIFont.boldSystemFont(ofSize: 17)
         label.textColor = .black
-        label.text = "tom"
         return label
     }()
     
@@ -75,17 +79,17 @@ class UserProfileHeader: UICollectionReusableView {
         label.font = UIFont.systemFont(ofSize: 15)
         label.textColor = .black
         label.numberOfLines = 0
-        label.text = "hello,my name is tom. I'm learning Swift to become an iOS engineer."
         return label
     }()
     
-    let editPersonInforButton: UIButton = {
+    let editProfileFollowButton: UIButton = {
         let button = UIButton()
         button.setTitle("編輯個人資料", for: .normal)
         button.setTitleColor(#colorLiteral(red: 0, green: 0, blue: 0, alpha: 1), for: .normal)
         button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 15)
         button.layer.borderWidth = 1
         button.layer.cornerRadius = 3
+        button.layer.borderColor = UIColor.lightGray.cgColor
         return button
     }()
     
@@ -148,10 +152,10 @@ class UserProfileHeader: UICollectionReusableView {
             make.left.equalTo(self).offset(10)
             make.right.lessThanOrEqualTo(self).offset(-10)
             make.top.equalTo(usernameLabel.snp.bottom).offset(10)
-            make.bottom.equalTo(editPersonInforButton.snp.top).offset(-10)
+            make.bottom.equalTo(editProfileFollowButton.snp.top).offset(-10)
         }
         
-        editPersonInforButton.snp.makeConstraints { (make) in
+        editProfileFollowButton.snp.makeConstraints { (make) in
             make.height.equalTo(30)
             make.left.equalTo(self).offset(10)
             make.right.equalTo(self).offset(-10)
@@ -174,7 +178,7 @@ class UserProfileHeader: UICollectionReusableView {
         addSubview(buttonStackView)
         addSubview(usernameLabel)
         addSubview(bioLabel)
-        addSubview(editPersonInforButton)
+        addSubview(editProfileFollowButton)
         addSubview(tabStackView)
         autoLayout()
         
@@ -185,6 +189,8 @@ class UserProfileHeader: UICollectionReusableView {
         setButtonTitle(String1: "2", String2: "粉絲", button: followersButton)
         setButtonTitle(String1: "3", String2: "追蹤中", button: followeringButton)
 
+        
+        editProfileFollowButton.addTarget(self, action: #selector(handleEditProfileOrFollow), for: .touchUpInside)
         gridButton.addTarget(self, action: #selector(didTapGridButton), for: .touchUpInside)
         taggedButton.addTarget(self, action: #selector(didTapTaggedButton), for: .touchUpInside)
         
@@ -196,12 +202,81 @@ class UserProfileHeader: UICollectionReusableView {
     
     // MARK: - Methods
     
+    @objc func handleEditProfileOrFollow() {
+        guard let currentLoggedInUserEmail = Auth.auth().currentUser?.email else { return }
+        let safeCurrentEmail = currentLoggedInUserEmail.safeDatabaseKey()
+        
+        guard let userEmail = user?.email else { return }
+        let safeUserEmail = userEmail.safeDatabaseKey()
+        
+        if editProfileFollowButton.titleLabel?.text == "Unfollow" {
+            //unfollow
+            let ref = Database.database().reference().child("following").child(safeCurrentEmail).child(safeUserEmail)
+            ref.removeValue { (error, ref) in
+                if let error = error {
+                    print(error)
+                    return
+                }
+                self.setupFollowStyle()
+                print("successfully unfollowed user: \(self.user?.username)")
+            }
+        } else {
+            //follow
+            let value = [safeUserEmail: 1]
+            let ref = Database.database().reference().child("following").child(safeCurrentEmail)
+            ref.updateChildValues(value, withCompletionBlock: { (error, ref) in
+                guard error == nil else {
+                    print("Failed to follow user: \(error)")
+                    return
+                }
+                self.editProfileFollowButton.setTitle("Unfollow", for: .normal)
+                self.editProfileFollowButton.backgroundColor = .white
+                self.editProfileFollowButton.setTitleColor(.black, for: .normal)
+            })
+        }
+        
+    }
+    
     @objc func didTapGridButton() {
         
     }
     
     @objc func didTapTaggedButton() {
         
+    }
+    
+    private func setEditFollowButton() {
+        guard let currentLoggedInUserEmail = Auth.auth().currentUser?.email else { return }
+        guard let userEmail = user?.email else { return }
+        let safeCurrentEmail = currentLoggedInUserEmail.safeDatabaseKey()
+        let safeUserEmail = userEmail.safeDatabaseKey()
+        
+        if safeUserEmail == safeCurrentEmail {
+            //edit Profile
+        } else {
+            
+            //check if following
+             let ref = Database.database().reference().child("following").child(safeCurrentEmail).child(safeUserEmail)
+            ref.observe(.value) { (snapshot) in
+                if let isFollowing = snapshot.value as? Int,isFollowing == 1 {
+                    self.editProfileFollowButton.setTitle("Unfollow", for: .normal)
+                    
+                } else {
+                    self.setupFollowStyle()
+                }
+            } withCancel: { (error) in
+                    print(error)
+            }
+
+            
+        }
+        
+    }
+    
+    private func setupFollowStyle() {
+        self.editProfileFollowButton.setTitle("Follow", for: .normal)
+        self.editProfileFollowButton.backgroundColor = .systemBlue
+        self.editProfileFollowButton.setTitleColor(.white, for: .normal)
     }
     
     func setButtonTitle(String1: String, String2: String, button: UIButton){

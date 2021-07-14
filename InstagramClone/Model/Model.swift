@@ -90,13 +90,32 @@ struct UserTest {
 
 struct PostTest {
     
+    var id: String? ///用於 comment
+    
     let user: UserTest
     let imageURL: String
     let caption: String
+    let creationDate: Date
     
     init(user: UserTest,dictionary: [String:Any]) {
         self.user = user
         self.imageURL = dictionary["imageURL"] as? String ?? ""
         self.caption = dictionary["caption"] as? String ?? ""
+        
+        let secondsFrom1970 = dictionary["creationDate"] as? Double ?? 0
+        self.creationDate = Date(timeIntervalSince1970: secondsFrom1970)
+    }
+}
+
+struct Comment {
+    
+    let user: UserTest
+    let text: String
+    let email: String
+    
+    init(user: UserTest,dictionary: [String:Any]) {
+        self.user = user
+        self.text = dictionary["text"] as? String ?? ""
+        self.email = dictionary["email"] as? String ?? ""
     }
 }

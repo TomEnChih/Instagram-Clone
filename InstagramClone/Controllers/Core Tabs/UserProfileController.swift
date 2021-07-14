@@ -19,6 +19,8 @@ class UserProfileController: UIViewController {
     
     private var user: UserTest?
     
+    var userEmail: String?
+    
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -67,12 +69,15 @@ class UserProfileController: UIViewController {
     
     #warning("database之後要整理")
     func fetchUser() {
-        guard let email = Auth.auth().currentUser?.email else {
-            return
-        }
+        
+        let email = userEmail ?? (Auth.auth().currentUser?.email ?? "")
+        
+//        guard let email = Auth.auth().currentUser?.email else {
+//            return
+//        }
         
         Database.fetchUserWithEmail(with: email) { (user) in
-            
+             
             self.user = user
             self.navigationItem.title = user.username
 
@@ -95,11 +100,12 @@ class UserProfileController: UIViewController {
     }
     
     func fetchOrderedPosts() {
-        guard let email = Auth.auth().currentUser?.email else { return }
+//        guard let email = Auth.auth().currentUser?.email else { return }
         
+        guard let email = self.user?.email else { return }
         let safeEmail = email.safeDatabaseKey()
-        let ref = Database.database().reference().child("posts").child(safeEmail)
         
+        let ref = Database.database().reference().child("posts").child(safeEmail)
         ref.queryOrdered(byChild: "creationDate").observe(.childAdded) { (snapshot) in
             
             guard let dictionary = snapshot.value as? [String:Any] else { return }
@@ -108,10 +114,10 @@ class UserProfileController: UIViewController {
             
             let post = PostTest(user: user, dictionary: dictionary)
             self.posts.append(post)
-            
             self.userProfileView.prfileCollectionView.reloadData()
         }
         
+        self.userProfileView.prfileCollectionView.reloadData()
     }
     
     private func fetchPosts() {
@@ -182,6 +188,7 @@ extension UserProfileController: UICollectionViewDelegateFlowLayout, UICollectio
         
         let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: UserProfileHeader.id, for: indexPath) as! UserProfileHeader
                 
+        header.user = user
         
         return header
         

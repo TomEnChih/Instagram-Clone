@@ -27,21 +27,21 @@ class UserSearchController: UIViewController {
         return searchBar
     }()
     
-    private let dimmedView: UIView = {
-        let view = UIView()
-        view.backgroundColor = .red
-        view.isHidden = true
-        view.alpha = 0
-        
-        return view
-    }()
+//    private let dimmedView: UIView = {
+//        let view = UIView()
+//        view.backgroundColor = .red
+//        view.isHidden = true
+//        view.alpha = 0
+//
+//        return view
+//    }()
     
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view = userSearchView
-        view.addSubview(dimmedView)
+//        view.addSubview(dimmedView)
         
         userSearchView.userSearchCollectionView.dataSource = self
         userSearchView.userSearchCollectionView.delegate = self
@@ -124,7 +124,9 @@ extension UserSearchController: UICollectionViewDataSource,UICollectionViewDeleg
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let user = filteredUsers[indexPath.item]
-        print(user.username)
+        let vc = UserProfileController()
+        vc.userEmail = user.email
+        navigationController?.pushViewController(vc, animated: true)
     }
     
 }
@@ -179,7 +181,7 @@ extension UserSearchController: UISearchBarDelegate {
     }
     
     
-    private func query(_ text: String) {
-        // perform the search in the back end
-    }
+//    private func query(_ text: String) {
+//         perform the search in the back end
+//    }
 }

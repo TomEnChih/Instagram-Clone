@@ -20,7 +20,8 @@ class UserSearchView: UIView {
         cv.register(UserSearchCell.self, forCellWithReuseIdentifier: UserSearchCell.id)
         cv.backgroundColor = .white
         cv.alwaysBounceVertical = true
-
+        cv.keyboardDismissMode = .onDrag
+        
         return cv
     }()
     

@@ -14,6 +14,8 @@ class SharePhotoController: UIViewController {
 
     // MARK: - Properties
     
+    static let updateFeedNotificationName = NSNotification.Name("UpdateFeed")
+    
     private let sharePhotoView = SharePhotoView()
     
     var selectedImage: UIImage? {
@@ -95,6 +97,8 @@ class SharePhotoController: UIViewController {
             }
             
             self.dismiss(animated: true, completion: nil)
+            
+            NotificationCenter.default.post(name: SharePhotoController.updateFeedNotificationName, object: nil)
         }
     }
 

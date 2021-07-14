@@ -21,14 +21,13 @@ class UserProfileView: UIView {
         layout.sectionInset = UIEdgeInsets(top: 0, left: 1, bottom: 0, right: 1) 
         
         let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        
         //cell
         cv.register(UserProfilePhotoCell.self, forCellWithReuseIdentifier: UserProfilePhotoCell.id)
         //header
         cv.register(UserProfileHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: UserProfileHeader.id)
         
         cv.backgroundColor = .white
-        
+        cv.alwaysBounceVertical = true
         return cv
     }()
     
