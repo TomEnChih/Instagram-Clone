@@ -23,6 +23,7 @@ class UserProfileView: UIView {
         let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
         //cell
         cv.register(UserProfilePhotoCell.self, forCellWithReuseIdentifier: UserProfilePhotoCell.id)
+        cv.register(HomePostCell.self, forCellWithReuseIdentifier: HomePostCell.id)
         //header
         cv.register(UserProfileHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: UserProfileHeader.id)
         

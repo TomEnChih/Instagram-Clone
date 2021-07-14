@@ -8,7 +8,7 @@
 import UIKit
 
 protocol HomePostButtonDelegate: AnyObject {
-    func didTapLike()
+    func didTapLike(for cell: HomePostCell)
     func didTapComment(post: PostTest)
 }
 
@@ -24,6 +24,8 @@ class HomePostCell: UICollectionViewCell {
     var post: PostTest? {
         didSet {
             guard let postImage = post?.imageURL else { return }
+            
+            likeButton.setImage(post?.hasLiked == true ? setLikeButtonImage(btn: likeButton, select: .like):setLikeButtonImage(btn: likeButton, select: .Unlike), for: .normal)
         
             postImageView.loadingImage(url: URL(string: postImage)!)
             
@@ -199,6 +201,7 @@ class HomePostCell: UICollectionViewCell {
         addSubview(captionLabel)
         autoLayout()
         commentButton.addTarget(self, action: #selector(handleComment), for: .touchUpInside)
+        likeButton.addTarget(self, action: #selector(handleLike), for: .touchUpInside)
     }
     
     required init?(coder: NSCoder) {
@@ -228,7 +231,7 @@ class HomePostCell: UICollectionViewCell {
     
     
     @objc func handleLike() {
-        delegate?.didTapLike()
+        delegate?.didTapLike(for: self)
     }
     
     @objc func handleComment() {
@@ -236,4 +239,23 @@ class HomePostCell: UICollectionViewCell {
         delegate?.didTapComment(post: post)
     }
     
+    private func setLikeButtonImage(btn: UIButton,select:Select) -> UIImage{
+        switch select {
+        case .like:
+            let config = UIImage.SymbolConfiguration(pointSize: 25, weight: .thin)
+            let image = UIImage(systemName: select.rawValue, withConfiguration: config)
+            btn.tintColor = .systemPink
+            return image!
+        case .Unlike:
+            let config = UIImage.SymbolConfiguration(pointSize: 25, weight: .thin)
+            let image = UIImage(systemName: select.rawValue, withConfiguration: config)
+            btn.tintColor = .black
+            return image!
+        }
+    }
+    
+    enum Select: String {
+        case like = "heart.fill"
+        case Unlike = "heart"
+    }
 }

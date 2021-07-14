@@ -87,6 +87,18 @@ class HomeController: UIViewController {
                 var post = PostTest(user: user, dictionary: dictionary)
                 post.id = key ///用於 comment
                 
+                guard let email = Auth.auth().currentUser?.email else { return }
+                let safeUserEmail = email.safeDatabaseKey()
+                
+                Database.database().reference().child("likes").child(key).child(safeUserEmail).observeSingleEvent(of: .value) { (snapshot) in
+                    
+                    if let value = snapshot.value as? Int,value == 1 {
+                        post.hasLiked = true
+                    } else {
+                        post.hasLiked = false
+                    }
+                }
+                
                 self.posts.append(post)
             }
             self.posts.sort { (p1, p2) -> Bool in
@@ -159,8 +171,27 @@ extension HomeController: UICollectionViewDataSource,UICollectionViewDelegateFlo
 //MARK: - HomePostButtonDelegate
 extension HomeController: HomePostButtonDelegate {
     
-    func didTapLike() {
+    func didTapLike(for cell: HomePostCell) {
+        guard let indexPath = homeView.homeCollectionView.indexPath(for: cell) else { return }
         
+        var post = posts[indexPath.item]
+        
+        guard let postId = post.id else { return }
+        guard let email = Auth.auth().currentUser?.email else { return }
+        let safeEmail = email.safeDatabaseKey()
+        let values = [safeEmail: post.hasLiked == true ? 0 : 1]
+        
+        Database.database().reference().child("likes").child(postId).updateChildValues(values) { (error, ref) in
+            if let error = error {
+                print("Failed to like post:",error)
+                return
+            }
+            print("Successfully liked post.")
+            post.hasLiked = !post.hasLiked ///post 跟 posts 無關，需要把他帶換掉 posts[indexPath.item]
+            self.posts[indexPath.item] = post
+            self.homeView.homeCollectionView.reloadItems(at: [indexPath])
+        }
+
     }
     
     func didTapComment(post: PostTest) {

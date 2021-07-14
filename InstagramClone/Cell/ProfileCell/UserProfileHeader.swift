@@ -9,11 +9,21 @@ import UIKit
 import FirebaseAuth
 import FirebaseDatabase
 
+protocol UserProfileButtonDelegate: AnyObject {
+    func didChangeToGridView()
+    func didChangeToListView()
+    func didChangeToTaggedView()
+    func didTapEditProfile()
+}
+
+
 class UserProfileHeader: UICollectionReusableView {
     
     // MARK: - Properties
     
     static let id = "UserProfileHeader"
+    
+    weak var delegate: UserProfileButtonDelegate?
     
     var user: UserTest? {
         didSet {
@@ -84,7 +94,7 @@ class UserProfileHeader: UICollectionReusableView {
     
     let editProfileFollowButton: UIButton = {
         let button = UIButton()
-        button.setTitle("編輯個人資料", for: .normal)
+        button.setTitle("Edit Profile", for: .normal)
         button.setTitleColor(#colorLiteral(red: 0, green: 0, blue: 0, alpha: 1), for: .normal)
         button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 15)
         button.layer.borderWidth = 1
@@ -93,20 +103,33 @@ class UserProfileHeader: UICollectionReusableView {
         return button
     }()
     
-    private let gridButton: UIButton = {
+    let gridButton: UIButton = {
         let button = UIButton()
         button.clipsToBounds = true
         
         let config = UIImage.SymbolConfiguration(pointSize: 25, weight: .semibold)
         let image = UIImage(systemName: "square.grid.2x2", withConfiguration: config)
         
-        button.tintColor = .black
+        button.tintColor = .lightGray
         button.setImage(image, for: .normal)
         
         return button
     }()
     
-    private let taggedButton: UIButton = {
+    let ListButton: UIButton = {
+        let button = UIButton()
+        button.clipsToBounds = true
+        
+        let config = UIImage.SymbolConfiguration(pointSize: 25, weight: .semibold)
+        let image = UIImage(systemName: "list.bullet", withConfiguration: config)
+        
+        button.tintColor = .lightGray
+        button.setImage(image, for: .normal)
+        
+        return button
+    }()
+    
+    let taggedButton: UIButton = {
         let button = UIButton()
         button.clipsToBounds = true
         
@@ -120,11 +143,17 @@ class UserProfileHeader: UICollectionReusableView {
     }()
     
     lazy var tabStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [gridButton,taggedButton])
+        let stackView = UIStackView(arrangedSubviews: [gridButton,ListButton,taggedButton])
         stackView.axis = .horizontal
         stackView.distribution = .fillEqually
         stackView.alignment = .fill
         return stackView
+    }()
+    
+    private let separateView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .darkGray
+        return view
     }()
     
     // MARK: - Autolayout
@@ -167,6 +196,12 @@ class UserProfileHeader: UICollectionReusableView {
             make.left.right.equalTo(self)
             make.height.equalTo(50)
         }
+        
+        separateView.snp.makeConstraints { (make) in
+            make.bottom.equalTo(self)
+            make.left.right.equalTo(self)
+            make.height.equalTo(0.5)
+        }
     }
     
     // MARK: - Init
@@ -180,9 +215,9 @@ class UserProfileHeader: UICollectionReusableView {
         addSubview(bioLabel)
         addSubview(editProfileFollowButton)
         addSubview(tabStackView)
+        addSubview(separateView)
         autoLayout()
         
-        usernameLabel.text = "tom"
         bioLabel.text = "hello,my name is tom. I'm learning Swift to become an iOS engineer."
         
         setButtonTitle(String1: "1", String2: "貼文", button: postButton)
@@ -191,8 +226,9 @@ class UserProfileHeader: UICollectionReusableView {
 
         
         editProfileFollowButton.addTarget(self, action: #selector(handleEditProfileOrFollow), for: .touchUpInside)
-        gridButton.addTarget(self, action: #selector(didTapGridButton), for: .touchUpInside)
-        taggedButton.addTarget(self, action: #selector(didTapTaggedButton), for: .touchUpInside)
+        gridButton.addTarget(self, action: #selector(handleChangeToGridView), for: .touchUpInside)
+        ListButton.addTarget(self, action: #selector(handleChangeToListView), for: .touchUpInside)
+        taggedButton.addTarget(self, action: #selector(handleChangeToTaggedView), for: .touchUpInside)
         
     }
     
@@ -237,12 +273,25 @@ class UserProfileHeader: UICollectionReusableView {
         
     }
     
-    @objc func didTapGridButton() {
-        
+    @objc func handleChangeToGridView() {
+        gridButton.tintColor = .systemBlue
+        ListButton.tintColor = .lightGray
+        taggedButton.tintColor = .lightGray
+        delegate?.didChangeToGridView()
     }
     
-    @objc func didTapTaggedButton() {
-        
+    @objc func handleChangeToListView() {
+        ListButton.tintColor = .systemBlue
+        taggedButton.tintColor = .lightGray
+        gridButton.tintColor = .lightGray
+        delegate?.didChangeToListView()
+    }
+    
+    @objc func handleChangeToTaggedView() {
+        taggedButton.tintColor = .systemBlue
+        ListButton.tintColor = .lightGray
+        gridButton.tintColor = .lightGray
+        delegate?.didChangeToTaggedView()
     }
     
     private func setEditFollowButton() {

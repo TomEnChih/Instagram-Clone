@@ -29,14 +29,13 @@ class CommentCell: UITableViewCell {
         let imageView = CustomImageView()
         imageView.layer.masksToBounds = true
         imageView.contentMode = .scaleAspectFit
-        imageView.backgroundColor = .black
         return imageView
     }()
     
     let  contentLabel: UITextView = {
         let label = UITextView()
         label.textColor = .black
-//        label.backgroundColor = .white
+        label.backgroundColor = .secondarySystemBackground
         label.isScrollEnabled = false
         label.textContainer.lineFragmentPadding = 0
         return label
@@ -56,7 +55,6 @@ class CommentCell: UITableViewCell {
         
         profileImageView.snp.makeConstraints { (make) in
             make.top.equalTo(self).offset(10)
-//            make.bottom.equalTo(self).offset(-10)
             make.left.equalTo(self).offset(15)
             make.size.equalTo(imageViewSize)
         }
@@ -83,6 +81,7 @@ class CommentCell: UITableViewCell {
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
+        backgroundColor = .secondarySystemBackground
         addSubview(profileImageView)
         addSubview(contentLabel)
         addSubview(separateView)

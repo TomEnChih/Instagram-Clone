@@ -92,7 +92,7 @@ class RegistrationView: UIView {
         button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 20)
         button.layer.masksToBounds = true
         button.layer.cornerRadius = 8.0
-        button.backgroundColor = UIColor(displayP3Red: 149/255, green: 144/255, blue: 204/255, alpha: 0.3)
+        button.backgroundColor = UIColor.garywhite
         button.isEnabled = false
         return button
     }()
