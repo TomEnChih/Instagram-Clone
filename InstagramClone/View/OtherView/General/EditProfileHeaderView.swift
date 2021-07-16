@@ -22,8 +22,8 @@ class EditProfileHeaderView: UITableViewHeaderFooterView {
     
     // MARK: - IBElement
     
-    let profilePhotoButton: UIButton = {
-        let button = UIButton()
+    let profilePhotoButton: CustomButton = {
+        let button = CustomButton()
         button.setBackgroundImage(UIImage(systemName: "plus.circle"), for: .normal)
         button.layer.masksToBounds = true
         button.layer.cornerRadius = 70

@@ -176,12 +176,7 @@ extension EditProfileController: UITableViewDelegate,UITableViewDataSource {
         if isChangeProfileImage {
             headerView.profilePhotoButton.setImage(selectedImage, for: .normal)
         } else {
-            let url = URL(string: user.profileImageURL)
-            let data = try? Data(contentsOf: url!)
-            if let imageData = data {
-                let image = UIImage(data: imageData)
-                headerView.profilePhotoButton.setImage(image, for: .normal)
-            }
+            headerView.profilePhotoButton.loadingImage(url: URL(string: user.profileImageURL)!)
         }
         
         

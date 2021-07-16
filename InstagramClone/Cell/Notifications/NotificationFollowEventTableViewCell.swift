@@ -7,32 +7,24 @@
 
 import UIKit
 
-protocol NotificaionFollowEventTableViewCellDelegate: AnyObject {
-    func didTapFollowButton(model: UserNotification)
-}
-
-
-
 class NotificationFollowEventTableViewCell: UITableViewCell {
 
     // MARK: - Properties
     
-    static let cellKey = "NotificationFollowEventTableViewCell"
-    
-    weak var delegate: NotificaionFollowEventTableViewCellDelegate?
-    
+    static let id = "NotificationFollowEventTableViewCell"
+        
     private var model: UserNotification?
     
     private let imageViewSize: CGFloat = 50
 
     // MARK: - IBOutlets
     
-    private let profileImageView: UIImageView = {
-        let imageView = UIImageView()
+    private let profileImageView: CustomImageView = {
+        let imageView = CustomImageView()
         imageView.layer.masksToBounds = true
         imageView.contentMode = .scaleAspectFit
-        imageView.backgroundColor = .systemBlue
-
+//        imageView.layer.borderWidth = 1
+//        imageView.layer.borderColor = UIColor.lightGray.cgColor
         return imageView
     }()
     
@@ -43,10 +35,10 @@ class NotificationFollowEventTableViewCell: UITableViewCell {
         return label
     }()
     
-    private let followButton: UIButton = {
-        let button = UIButton()
-        button.backgroundColor = .lightGray
-        return button
+    private let separateView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .darkGray
+        return view
     }()
         
     // MARK: - Autolayout
@@ -56,8 +48,7 @@ class NotificationFollowEventTableViewCell: UITableViewCell {
         profileImageView.layer.cornerRadius = imageViewSize/2
 
         profileImageView.snp.makeConstraints { (make) in
-            make.top.equalTo(contentView).offset(5)
-            make.bottom.equalTo(contentView).offset(-5)
+            make.centerY.equalTo(contentView)
             make.left.equalTo(contentView).offset(5)
             make.size.equalTo(imageViewSize)
         }
@@ -67,12 +58,13 @@ class NotificationFollowEventTableViewCell: UITableViewCell {
             make.left.equalTo(profileImageView.snp.right).offset(5)
         }
         
-        followButton.snp.makeConstraints { (make) in
-            make.centerY.equalTo(profileImageView)
-            make.right.equalTo(contentView).offset(-5)
-            make.height.equalTo(contentView).multipliedBy(0.7)
-            make.width.equalTo(contentView).multipliedBy(0.2)
+        separateView.snp.makeConstraints { (make) in
+            make.bottom.equalTo(contentView)
+            make.left.equalTo(lable)
+            make.right.equalTo(contentView).offset(-10)
+            make.height.equalTo(1)
         }
+        
     }
     
     
@@ -82,13 +74,10 @@ class NotificationFollowEventTableViewCell: UITableViewCell {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         contentView.addSubview(profileImageView)
         contentView.addSubview(lable)
-        contentView.addSubview(followButton)
-        
+        contentView.addSubview(separateView)
         autoLayout()
-        
         selectionStyle = .none
         
-        followButton.addTarget(self, action: #selector(didTapPostButton), for: .touchUpInside)
     }
     
     required init?(coder: NSCoder) {
@@ -99,37 +88,23 @@ class NotificationFollowEventTableViewCell: UITableViewCell {
     
     public func configure(with model: UserNotification ) {
         self.model = model
-        #warning("還要加東西")
         switch model.type {
-        case .like(let post):
-            let thumbnail = post.owner.profilePhoto
-//            followButton.
-        case .follow(let state):
-            switch state {
-            case .following:
-                followButton.setTitle("Follow", for: .normal)
-                followButton.setTitleColor(.white, for: .normal)
-            case .unFollowing:
-                followButton.setTitle("UnFollow", for: .normal)
-                followButton.setTitleColor(.label, for: .normal)
-                followButton.layer.borderWidth = 1
-                followButton.layer.borderColor = UIColor.secondaryLabel.cgColor
-            }
-            
+        case .like(_): break
+        case .follow:
+            profileImageView.loadingImage(url: URL(string: model.user.profileImageURL)!)
+            setupAttributedLabel()
         }
-        
-        lable.text = model.text
-        
         
     }
     
-    @objc func didTapPostButton() {
-        guard let model = model else {
-            return
-        }
+    private func setupAttributedLabel() {
+        guard let model = self.model else { return }
         
-        delegate?.didTapFollowButton(model: model )
+        let attributedText = NSMutableAttributedString(string: model.user.username, attributes: [NSAttributedString.Key.font: UIFont.boldSystemFont(ofSize: 15)])
+        
+        attributedText.append(NSMutableAttributedString(string: " started following you.", attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 14)]))
+        
+        lable.attributedText = attributedText
     }
-    
     
 }

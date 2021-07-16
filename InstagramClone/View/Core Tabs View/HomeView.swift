@@ -21,6 +21,7 @@ class HomeView: UIView {
         let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
         cv.register(HomePostCell.self, forCellWithReuseIdentifier: HomePostCell.id)
         cv.backgroundColor = .white
+        cv.alwaysBounceVertical = true
         
         return cv
     }()

@@ -16,7 +16,7 @@ class NotificationLikeEventTableViewCell: UITableViewCell {
 
     // MARK: - Properties
     
-    static let cellKey = "NotificationLikeEventTableViewCell"
+    static let id = "NotificationLikeEventTableViewCell"
     
     weak var delegate: NotificaionLikeEventTableViewCellDelegate?
     
@@ -26,27 +26,35 @@ class NotificationLikeEventTableViewCell: UITableViewCell {
 
     // MARK: - IBOutlets
     
-    private let profileImageView: UIImageView = {
-        let imageView = UIImageView()
+    private let profileImageView: CustomImageView = {
+        let imageView = CustomImageView()
         imageView.layer.masksToBounds = true
         imageView.contentMode = .scaleAspectFit
-        
+//        imageView.layer.borderWidth = 1
+//        imageView.layer.borderColor = UIColor.lightGray.cgColor
         return imageView
     }()
     
     private let lable: UILabel = {
         let label = UILabel()
         label.textColor = .label
-        label.text = "@tom like your photo. "
         return label
     }()
     
-    private let postButton: UIButton = {
-        let button = UIButton()
+    private let postButton: CustomButton = {
+        let button = CustomButton()
         button.backgroundColor = .systemRed
+        button.layer.borderWidth = 1
+        button.layer.borderColor = UIColor.lightGray.cgColor
         return button
     }()
         
+    private let separateView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .darkGray
+        return view
+    }()
+    
     // MARK: - Autolayout
     
     func autoLayout() {
@@ -54,8 +62,7 @@ class NotificationLikeEventTableViewCell: UITableViewCell {
         profileImageView.layer.cornerRadius = imageViewSize/2
 
         profileImageView.snp.makeConstraints { (make) in
-            make.top.equalTo(contentView).offset(5)
-            make.bottom.equalTo(contentView).offset(-5)
+            make.centerY.equalTo(contentView)
             make.left.equalTo(contentView).offset(5)
             make.size.equalTo(imageViewSize)
         }
@@ -70,6 +77,14 @@ class NotificationLikeEventTableViewCell: UITableViewCell {
             make.right.equalTo(contentView).offset(-5)
             make.size.equalTo(imageViewSize)
         }
+        
+        separateView.snp.makeConstraints { (make) in
+            make.bottom.equalTo(contentView)
+            make.left.equalTo(lable)
+            make.right.equalTo(contentView).offset(-10)
+            make.height.equalTo(1)
+        }
+        
     }
 
     
@@ -80,9 +95,9 @@ class NotificationLikeEventTableViewCell: UITableViewCell {
         contentView.addSubview(profileImageView)
         contentView.addSubview(lable)
         contentView.addSubview(postButton)
+        contentView.addSubview(separateView)
         autoLayout()
-        
-//        selectionStyle = .none
+        selectionStyle = .none
         
         postButton.addTarget(self, action: #selector(didTapPostButton), for: .touchUpInside)
     }
@@ -96,17 +111,16 @@ class NotificationLikeEventTableViewCell: UITableViewCell {
     public func configure(with model: UserNotification) {
         
         self.model = model
-        #warning("還要加東西")
         switch model.type {
         case .like(let post):
-//            let thumbnail = post.thumbnailImage
-            postButton.setImage(UIImage(systemName: "person"), for: .normal)
-        break
-        case .follow:
-            break
+            
+            profileImageView.loadingImage(url: URL(string: model.user.profileImageURL)!)
+            setupAttributedLabel()
+            postButton.loadingImage(url: URL(string: post.imageURL)!)
+        
+        case .follow: break
         }
         
-        lable.text = model.text
     }
     
     @objc func didTapPostButton() {
@@ -115,7 +129,17 @@ class NotificationLikeEventTableViewCell: UITableViewCell {
             return
         }
         
-        delegate?.didTapRelatedPostButton(model: model )
+        delegate?.didTapRelatedPostButton(model: model)
+    }
+    
+    private func setupAttributedLabel() {
+        guard let model = self.model else { return }
+        
+        let attributedText = NSMutableAttributedString(string: model.user.username, attributes: [NSAttributedString.Key.font: UIFont.boldSystemFont(ofSize: 15)])
+        
+        attributedText.append(NSMutableAttributedString(string: " like your post.", attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 14)]))
+        
+        lable.attributedText = attributedText
     }
 
 

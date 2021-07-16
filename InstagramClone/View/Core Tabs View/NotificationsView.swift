@@ -15,8 +15,10 @@ class NotificationsView: UIView {
         
     let notificationsTableView: UITableView = {
         let tv = UITableView()
-        tv.register(NotificationFollowEventTableViewCell.self, forCellReuseIdentifier: NotificationFollowEventTableViewCell.cellKey)
-        tv.register(NotificationLikeEventTableViewCell.self, forCellReuseIdentifier: NotificationLikeEventTableViewCell.cellKey)
+        tv.register(NotificationFollowEventTableViewCell.self, forCellReuseIdentifier: NotificationFollowEventTableViewCell.id)
+        tv.register(NotificationLikeEventTableViewCell.self, forCellReuseIdentifier: NotificationLikeEventTableViewCell.id)
+        tv.register(NotificationNoCell.self, forCellReuseIdentifier: NotificationNoCell.id)
+        tv.separatorStyle = .none
         return tv
     }()
     
@@ -24,7 +26,9 @@ class NotificationsView: UIView {
     
     func autoLayout() {
         notificationsTableView.snp.makeConstraints { (make) in
-            make.edges.equalTo(self)
+            make.top.equalTo(self.snp_topMargin)
+            make.bottom.equalTo(self.snp_bottomMargin)
+            make.left.right.equalTo(self)
         }
     }
     

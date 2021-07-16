@@ -48,7 +48,7 @@ class TabBarController: UITabBarController, UITabBarControllerDelegate {
         let photoSelectorVC = PhotoSelectorController()
         let navProduceVC = templateNavController(photoSelectorVC, unselectedImage: "plus.square", selectedImage: "plus.square.fill")
         
-        let notificationsVC = NotificationsVC()
+        let notificationsVC = NotificationsController()
         let navNotificationsVC = templateNavController(notificationsVC, unselectedImage: "bell", selectedImage: "bell.fill")
         
         let profileVC = UserProfileController()
