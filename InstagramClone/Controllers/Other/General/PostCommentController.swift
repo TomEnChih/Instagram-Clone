@@ -9,7 +9,7 @@ import UIKit
 import FirebaseAuth
 import FirebaseDatabase
 
-class PostCommentVC: UIViewController {
+class PostCommentController: UIViewController {
     
     // MARK: - Properties
     
@@ -20,24 +20,24 @@ class PostCommentVC: UIViewController {
     
     // MARK: - Init
     
-    init() {
-        super.init(nibName: nil, bundle: nil)
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
+//    init() {
+//        super.init(nibName: nil, bundle: nil)
+//    }
+//
+//    required init?(coder: NSCoder) {
+//        fatalError("init(coder:) has not been implemented")
+//    }
+//
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view = postCommentView
         
-        navigationController?.title = "Comments"
+        self.navigationItem.title = "Comments"
         postCommentView.commentTableView.delegate = self
         postCommentView.commentTableView.dataSource = self
-        postCommentBottomView.textField.delegate = self
+        postCommentBottomView.commentTextView.delegate = self
         buttonActionFunction()
         fetchComments()
     }
@@ -88,7 +88,7 @@ class PostCommentVC: UIViewController {
             let safeEmail = email.safeDatabaseKey()
             guard let postId = self.post?.id else { return }
             
-            let values = ["text": self.postCommentBottomView.textField.text ?? "error",
+            let values = ["text": self.postCommentBottomView.commentTextView.text ?? "error",
                           "creationDate": Date().timeIntervalSince1970,
                           "email" : safeEmail]
                 as [String : Any]
@@ -99,7 +99,7 @@ class PostCommentVC: UIViewController {
                     return
                 }
                 print("Successfully inserted comment.")
-                self.postCommentBottomView.textField.text = nil
+                self.postCommentBottomView.commentTextView.returnCommentText()
             }
         }
         
@@ -110,7 +110,7 @@ class PostCommentVC: UIViewController {
 
 //MARK: - TableViewDelegate,TableViewDataSource
 
-extension PostCommentVC: UITableViewDelegate,UITableViewDataSource {
+extension PostCommentController: UITableViewDelegate,UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         comments.count
@@ -136,13 +136,10 @@ extension PostCommentVC: UITableViewDelegate,UITableViewDataSource {
 
 //MARK: - TextFieldDelegate
 
-extension PostCommentVC: UITextFieldDelegate {
+extension PostCommentController: UITextViewDelegate {
     
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        postCommentBottomView.textField.resignFirstResponder()
-        postCommentBottomView.handleSend()
-        
-        return true
+    func textViewDidChange(_ textView: UITextView) {
+        NotificationCenter.default.post(name: CommentTextView.textChangeNotificationName, object: nil)
     }
     
 }

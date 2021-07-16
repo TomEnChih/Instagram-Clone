@@ -13,7 +13,7 @@ class HomeController: UIViewController {
     
     // MARK: - Properties
     
-    private let homeView = HomeTestView()
+    private let homeView = HomeView()
     
     private var posts = [PostTest]()
     
@@ -196,7 +196,7 @@ extension HomeController: HomePostButtonDelegate {
     
     func didTapComment(post: PostTest) {
         print(post.caption)
-        let vc = PostCommentVC()
+        let vc = PostCommentController()
         vc.post = post
         vc.modalPresentationStyle = .fullScreen
         navigationController?.pushViewController(vc, animated: true)

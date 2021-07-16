@@ -1,5 +1,5 @@
 //
-//  FormTableViewCell.swift
+//  EditProfileCell.swift
 //  InstagramClone
 //
 //  Created by 董恩志 on 2021/6/25.
@@ -7,20 +7,20 @@
 
 import UIKit
 
-protocol FormTableViewCellDelegate: AnyObject {
-    func formTableViewCell(_ cell: FormTableViewCell, didUpdateField updatedModel: EditProfileFormModel?)
+protocol EditProfileCellDelegate: AnyObject {
+    func editProfileCell(_ cell: EditProfileCell, didUpdateField updatedModel: EditProfileModel?)
 }
 
 
-class FormTableViewCell: UITableViewCell,UITextFieldDelegate {
+class EditProfileCell: UITableViewCell,UITextFieldDelegate {
     
     // MARK: - Properties
     
-    static let cellKey = "FormTableViewCell"
+    static let id = "EditProfileCell"
     
-    public weak var delegate: FormTableViewCellDelegate?
+    public weak var delegate: EditProfileCellDelegate?
     
-    private var model: EditProfileFormModel?
+    private var model: EditProfileModel?
     
     // MARK: - IBElements
     
@@ -37,6 +37,11 @@ class FormTableViewCell: UITableViewCell,UITextFieldDelegate {
         return textField
     }()
     
+    private let separateView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .darkGray
+        return view
+    }()
     
     // MARK: - Autolayout
     
@@ -46,7 +51,7 @@ class FormTableViewCell: UITableViewCell,UITextFieldDelegate {
             make.top.equalTo(contentView).offset(5)
             make.bottom.equalTo(contentView).offset(-5)
             make.height.equalTo(40)
-            make.width.equalTo(150)
+            make.width.equalTo(contentView).multipliedBy(0.2)
         }
         
         field.snp.makeConstraints { (make) in
@@ -56,18 +61,26 @@ class FormTableViewCell: UITableViewCell,UITextFieldDelegate {
             make.bottom.equalTo(contentView).offset(-5)
             make.height.equalTo(40)
         }
+        
+        separateView.snp.makeConstraints { (make) in
+            make.bottom.equalTo(self)
+            make.left.equalTo(formLabel.snp.right).offset(20)
+            make.right.equalTo(self).offset(-10)
+            make.height.equalTo(1)
+        }
     }
     
     // MARK: - Init
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-//        clipsToBounds = true
         contentView.addSubview(formLabel)
         contentView.addSubview(field)
+        contentView.addSubview(separateView)
         field.delegate = self
         selectionStyle = .none
         autoLayout()
+        field.addTarget(self, action: #selector(handleSendValue), for: .editingChanged)
     }
     
     required init?(coder: NSCoder) {
@@ -77,21 +90,24 @@ class FormTableViewCell: UITableViewCell,UITextFieldDelegate {
     
     // MARK: - Methods
     
-    public func configure(with model: EditProfileFormModel) {
+    public func configure(with model: EditProfileModel,index:IndexPath) {
         self.model = model
         formLabel.text = model.label
         field.placeholder = model.placeholder
         field.text = model.value
     }
     
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        model?.value = textField.text
-        guard let model = model else {
-            return true
-        }
+    @objc func handleSendValue() {
+        model?.value = field.text
+        guard let model = model else { return }
         
-        delegate?.formTableViewCell(self, didUpdateField: model)
+        delegate?.editProfileCell(self, didUpdateField: model)
+    }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        
         textField.resignFirstResponder()
         return true
     }
+    
 }

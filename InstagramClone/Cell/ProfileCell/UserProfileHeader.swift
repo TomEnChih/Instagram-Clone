@@ -31,7 +31,8 @@ class UserProfileHeader: UICollectionReusableView {
             guard let profileImageURL = user?.profileImageURL else { return }
             
             profileImageView.loadingImage(url: URL(string: profileImageURL)!)
-            usernameLabel.text = user?.username
+            usernameLabel.text = user?.name
+            bioLabel.text = user?.bio
             
             setEditFollowButton()
         }
@@ -217,14 +218,7 @@ class UserProfileHeader: UICollectionReusableView {
         addSubview(tabStackView)
         addSubview(separateView)
         autoLayout()
-        
-        bioLabel.text = "hello,my name is tom. I'm learning Swift to become an iOS engineer."
-        
-        setButtonTitle(String1: "1", String2: "貼文", button: postButton)
-        setButtonTitle(String1: "2", String2: "粉絲", button: followersButton)
-        setButtonTitle(String1: "3", String2: "追蹤中", button: followeringButton)
-
-        
+                
         editProfileFollowButton.addTarget(self, action: #selector(handleEditProfileOrFollow), for: .touchUpInside)
         gridButton.addTarget(self, action: #selector(handleChangeToGridView), for: .touchUpInside)
         ListButton.addTarget(self, action: #selector(handleChangeToListView), for: .touchUpInside)
@@ -245,6 +239,11 @@ class UserProfileHeader: UICollectionReusableView {
         guard let userEmail = user?.email else { return }
         let safeUserEmail = userEmail.safeDatabaseKey()
         
+        guard safeUserEmail != safeCurrentEmail else {
+            delegate?.didTapEditProfile()
+            return
+        }
+        
         if editProfileFollowButton.titleLabel?.text == "Unfollow" {
             //unfollow
             let ref = Database.database().reference().child("following").child(safeCurrentEmail).child(safeUserEmail)
@@ -254,21 +253,44 @@ class UserProfileHeader: UICollectionReusableView {
                     return
                 }
                 self.setupFollowStyle()
+                
                 print("successfully unfollowed user: \(self.user?.username)")
             }
+            //unfollower (粉絲)
+            let followerRef = Database.database().reference().child("follower").child(safeUserEmail).child(safeCurrentEmail)
+            followerRef.removeValue { (error, ref) in
+                if let error = error {
+                    print(error)
+                    return
+                }
+                print("粉絲減少: \(self.user?.username)")
+            }
+            
         } else {
             //follow
             let value = [safeUserEmail: 1]
             let ref = Database.database().reference().child("following").child(safeCurrentEmail)
             ref.updateChildValues(value, withCompletionBlock: { (error, ref) in
                 guard error == nil else {
-                    print("Failed to follow user: \(error)")
+                    print("Failed to follow user:",error)
                     return
                 }
                 self.editProfileFollowButton.setTitle("Unfollow", for: .normal)
                 self.editProfileFollowButton.backgroundColor = .white
                 self.editProfileFollowButton.setTitleColor(.black, for: .normal)
             })
+            
+            // 關於 follower (粉絲)
+            let followerValue = [safeCurrentEmail: 1]
+            let followerRef = Database.database().reference().child("follower").child(safeUserEmail)
+            followerRef.updateChildValues(followerValue) { (error, ref) in
+                guard error == nil else {
+                    print("粉絲增加失敗：",error)
+                    return
+                }
+                print("粉絲增加")
+            }
+
         }
         
     }
@@ -294,7 +316,7 @@ class UserProfileHeader: UICollectionReusableView {
         delegate?.didChangeToTaggedView()
     }
     
-    private func setEditFollowButton() {
+    func setEditFollowButton() {
         guard let currentLoggedInUserEmail = Auth.auth().currentUser?.email else { return }
         guard let userEmail = user?.email else { return }
         let safeCurrentEmail = currentLoggedInUserEmail.safeDatabaseKey()

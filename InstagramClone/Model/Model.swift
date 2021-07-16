@@ -42,17 +42,17 @@ public struct UserPost {
 //    let thumbnailImage: URL
     let postURL: URL
     let caption: String // 自己的po文內容
-    let likeCount: [PostLike]
+//    let likeCount: [PostLike]
     let comments:[PostComment]
     let createdDate: Date
 //    let taggedUsers: [String] // 不確定 User
     let owner: User
 }
 
-struct PostLike {
-    let username: String
-    let postIdentifier: String
-}
+//struct PostLike {
+//    let username: String
+//    let postIdentifier: String
+//}
 
 struct CommentLike {
     let username: String
@@ -68,23 +68,28 @@ struct PostComment {
 }
 
 
-enum Profile: Int {
-    case Information = 0
-    case Article
-
-}
+//enum Profile: Int {
+//    case Information = 0
+//    case Article
+//
+//}
 
 
 struct UserTest {
     
     let email: String
-    let username: String
+    var username: String
     let profileImageURL: String
+    
+    var name: String?
+    var bio: String?
     
     init(email: String,dictionary: [String:Any]) {
         self.email = email 
         self.username = dictionary["username"] as? String ?? ""
         self.profileImageURL = dictionary["profileImageURL"] as? String ?? ""
+        self.name = dictionary["name"] as? String ?? ""
+        self.bio = dictionary["bio"] as? String ?? ""
     }
 }
 

@@ -176,7 +176,7 @@ extension PostVC: IGFeedPostActionsTableViewCellDelegate {
     
     func didTapCommentButton() {
         
-//        let vc = PostCommentVC(comments: comments)
+//        let vc = PostCommentController(comments: comments)
 //        present(vc, animated: true, completion: nil)
     }
     

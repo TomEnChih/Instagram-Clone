@@ -24,6 +24,17 @@ class UserProfileController: UIViewController {
     var isGridView = true
     var isFinishedPaging = false
     
+    var following = "" {
+        didSet {
+            self.userProfileView.prfileCollectionView.reloadData()
+        }
+    }
+    
+    var follower = "" {
+        didSet {
+            self.userProfileView.prfileCollectionView.reloadData()
+        }
+    }
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -32,8 +43,9 @@ class UserProfileController: UIViewController {
         userProfileView.prfileCollectionView.dataSource = self
         setupNavigationButtons()
         fetchUser()
-//        fetchOrderedPosts()
+        NotificationCenter.default.addObserver(self, selector: #selector(updateUser), name: EditProfileController.editProfileNotificationName, object: nil)
     }
+    
     
     // MARK: - Methods
     func setupNavigationButtons() {
@@ -49,42 +61,61 @@ class UserProfileController: UIViewController {
         navigationController?.pushViewController(vc, animated: true)
     }
     
-//    func setupProfileImage() {
-//
-//        guard let profileImageURL = user?.profileImageURL else { return }
-//
-//        guard let url = URL(string: profileImageURL) else { return }
-//
-//        URLSession.shared.dataTask(with: url) { (data,_,error) in
-//
-//            guard error == nil,
-//                  let data = data else { return }
-//
-//            let image = UIImage(data: data)
-//
-//            DispatchQueue.main.async {
-//                //                self.userProfileView.prfileCollectionView.
-//            }
-//        }
-//
-//    }
+    func fetchFollower(){
+        guard let email = self.user?.email else { return }
+        let safeEmail = email.safeDatabaseKey()
+        
+        let ref = Database.database().reference().child("follower").child(safeEmail)
+        ref.observe(.value) { (snapshot) in
+            
+            self.follower = String(snapshot.childrenCount)
+        }
+    }
     
+    func fetchFollowing(){
+        guard let email = self.user?.email else { return }
+        let safeEmail = email.safeDatabaseKey()
+        
+        //        var tempSet = Set<String>()
+        
+        let ref = Database.database().reference().child("following").child(safeEmail)
+        ref.observe(.value) { (snapshot) in
+            
+            self.following = String(snapshot.childrenCount)
+        }
+        
+    }
+    
+    @objc func updateUser() {
+        guard let email = Auth.auth().currentUser?.email else { return }
+        let safeEmail = email.safeDatabaseKey()
+        
+        Database.fetchUserWithEmail(with: safeEmail) { (user) in
+            
+            self.user = user
+            self.navigationItem.title = user.username
+            self.userProfileView.prfileCollectionView.reloadData()
+        }
+        
+    }
     
     #warning("database之後要整理")
     func fetchUser() {
         
         let email = userEmail ?? (Auth.auth().currentUser?.email ?? "")
         
-//        guard let email = Auth.auth().currentUser?.email else {
-//            return
-//        }
+        //        guard let email = Auth.auth().currentUser?.email else {
+        //            return
+        //        }
         
         Database.fetchUserWithEmail(with: email) { (user) in
-             
+            
             self.user = user
             self.navigationItem.title = user.username
-
+            
             self.fetchOrderedPosts()
+            self.fetchFollowing()
+            self.fetchFollower()
         }
     }
     
@@ -93,13 +124,13 @@ class UserProfileController: UIViewController {
         let safeEmail = email.safeDatabaseKey()
         
         let ref = Database.database().reference().child("posts").child(safeEmail)
-//        var query = ref.queryOrdered(byChild: "creationDate")
+        //        var query = ref.queryOrdered(byChild: "creationDate")
         var query = ref.queryOrderedByKey()
         
         if posts.count > 0 {
             let value = posts.last?.id
             
-//            let value = posts.last?.creationDate.timeIntervalSince1970
+            //            let value = posts.last?.creationDate.timeIntervalSince1970
             query = query.queryEnding (atValue: value)
         }
         
@@ -140,7 +171,7 @@ class UserProfileController: UIViewController {
     
     
     func fetchOrderedPosts() {
-//        guard let email = Auth.auth().currentUser?.email else { return }
+        //        guard let email = Auth.auth().currentUser?.email else { return }
         
         guard let email = self.user?.email else { return }
         let safeEmail = email.safeDatabaseKey()
@@ -171,9 +202,9 @@ extension UserProfileController: UICollectionViewDelegateFlowLayout, UICollectio
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
         //show you how to fire off the paginate cell
-//        if indexPath.item == self.posts.count - 1 && !isFinishedPaging {
-//            peginatePosts()
-//        }
+        //        if indexPath.item == self.posts.count - 1 && !isFinishedPaging {
+        //            peginatePosts()
+        //        }
         
         if isGridView {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: UserProfilePhotoCell.id, for: indexPath) as! UserProfilePhotoCell
@@ -218,9 +249,15 @@ extension UserProfileController: UICollectionViewDelegateFlowLayout, UICollectio
         }
         
         let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: UserProfileHeader.id, for: indexPath) as! UserProfileHeader
-                
+        
         header.user = user
         header.delegate = self
+        header.setButtonTitle(String1: String(posts.count), String2: "貼文", button: header.postButton)
+        header.setButtonTitle(String1: following, String2: "追蹤中", button: header.followeringButton)
+        header.setButtonTitle(String1: follower, String2: "粉絲", button: header.followersButton)
+        header.gridButton.tintColor = isGridView ? .systemBlue: .lightGray
+        header.ListButton.tintColor = !isGridView ? .systemBlue: .lightGray
+        
         
         return header
         
@@ -230,11 +267,11 @@ extension UserProfileController: UICollectionViewDelegateFlowLayout, UICollectio
         
         let indexPath = IndexPath(item: 0, section: section)
         let headerView = self.collectionView(collectionView, viewForSupplementaryElementOfKind: UICollectionView.elementKindSectionHeader, at: indexPath)
-
+        
         return headerView.systemLayoutSizeFitting(CGSize(width: collectionView.frame.width, height: UIView.layoutFittingExpandedSize.height),
                                                   withHorizontalFittingPriority: .required, // Width is fixed
                                                   verticalFittingPriority: .fittingSizeLevel) // Height can be as large as needed
-//                return CGSize(width: userProfileView.prfileCollectionView.frame.width, height: 400)
+        //                return CGSize(width: userProfileView.prfileCollectionView.frame.width, height: 400)
     }
     
 }
@@ -258,6 +295,12 @@ extension UserProfileController: UserProfileButtonDelegate {
     
     func didTapEditProfile() {
         
+        guard let user = user else { return }
+        
+        let vc = EditProfileController(user: user)
+        let navVC = UINavigationController(rootViewController: vc)
+        navVC.modalPresentationStyle = .fullScreen
+        present(navVC, animated: true, completion: nil)
     }
     
 }

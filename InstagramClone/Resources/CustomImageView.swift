@@ -28,9 +28,12 @@ class CustomImageView: UIImageView {
                     DispatchQueue.main.async {
                         //判斷式
                         if url == self.url {
-                            let cachedImage = UIImage(data: data)
+                            guard let cachedImage = UIImage(data: data) else {
+                                print("image 取得錯誤")
+                                return
+                            }
                             self.image = cachedImage
-                            CustomImageView.cache.setObject(cachedImage!, forKey: url as AnyObject)
+                            CustomImageView.cache.setObject(cachedImage, forKey: url as AnyObject)
                             print("You get image from \(url)")
                         }else{
                             print("錯誤 ImageURL")

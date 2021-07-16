@@ -59,7 +59,7 @@ class NotificationsVC: UIViewController {
             let post = UserPost(postType: .photo,
                                 postURL: URL(string: "https://storage.googleapis.com/redso-challenge.appspot.com/catalog/0.jpg")!,
                                 caption: "it's my first picture",
-                                likeCount: [],
+//                                likeCount: [],
                                 comments: [],
                                 createdDate: Date(),
                                 owner: user)

@@ -2,44 +2,50 @@
 //  HomeView.swift
 //  InstagramClone
 //
-//  Created by 董恩志 on 2021/6/25.
+//  Created by 董恩志 on 2021/7/11.
 //
 
 import UIKit
 
 class HomeView: UIView {
 
+    
+    
     // MARK: - UIElement
-    let teamTableView: UITableView = {
-        let tv = UITableView()
-//        
-//        tv.register(IGFeedPostTableViewCell.self, forCellReuseIdentifier: IGFeedPostTableViewCell.cellKey)
-//        tv.register(IGFeedPostHeaderTableViewCell.self, forCellReuseIdentifier: IGFeedPostHeaderTableViewCell.cellKey)
-//        tv.register(IGFeedPostActionsTableViewCell.self, forCellReuseIdentifier: IGFeedPostActionsTableViewCell.cellKey)
-//        tv.register(IGFeedPostGeneralTableViewCell.self, forCellReuseIdentifier: IGFeedPostGeneralTableViewCell.cellKey)
-//        
-        tv.separatorStyle = .none
-
-        return tv
+    
+    var  homeCollectionView: UICollectionView = {
+        
+        let layout = UICollectionViewFlowLayout()
+        layout.minimumLineSpacing = 5
+        
+        let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        cv.register(HomePostCell.self, forCellWithReuseIdentifier: HomePostCell.id)
+        cv.backgroundColor = .white
+        
+        return cv
     }()
+    
     // MARK: - Autolayout
     
-    func autoLayout() {
+    private func autoLayout() {
         
-        teamTableView.snp.makeConstraints { (make) in
-            make.edges.equalTo(self)
+        homeCollectionView.snp.makeConstraints { (make) in
+            make.left.right.equalTo(self)
+            make.top.equalTo(self.snp_topMargin)
+            make.bottom.equalTo(self.snp_bottomMargin)
         }
     }
+    
     // MARK: - Init
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
-        backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
-        addSubview(teamTableView)
+        backgroundColor = .white
+        addSubview(homeCollectionView)
         autoLayout()
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
 }

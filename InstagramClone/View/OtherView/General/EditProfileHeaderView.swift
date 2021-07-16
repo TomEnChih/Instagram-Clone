@@ -7,18 +7,26 @@
 
 import UIKit
 
-class EditProfileHeaderView: UIView {
+protocol EditProfileHeaderViewDelegate: AnyObject {
+    func changeProfileImage()
+}
 
-    // MARK: - Properties
+
+class EditProfileHeaderView: UITableViewHeaderFooterView {
     
-    var changeProfilePhoto: (()->Void)?
+    // MARK: - Properties
+        
+    static let id = "EditProfileHeaderView"
+    
+    weak var delegate: EditProfileHeaderViewDelegate?
+    
     // MARK: - IBElement
     
     let profilePhotoButton: UIButton = {
         let button = UIButton()
-        button.setBackgroundImage(UIImage(systemName: "person.circle"), for: .normal)
+        button.setBackgroundImage(UIImage(systemName: "plus.circle"), for: .normal)
         button.layer.masksToBounds = true
-        button.layer.cornerRadius = 25
+        button.layer.cornerRadius = 70
         button.layer.borderWidth = 1
         button.layer.borderColor = UIColor.secondarySystemBackground.cgColor
         return button
@@ -27,21 +35,20 @@ class EditProfileHeaderView: UIView {
     
     func autoLayout() {
         profilePhotoButton.snp.makeConstraints { (make) in
-            make.top.equalTo(self).offset(10)
-            make.bottom.equalTo(self).offset(-10)
-            make.size.equalTo(50)
+            make.center.equalTo(self)
+            make.size.equalTo(140)
         }
     }
-
+    
     // MARK: - Init
-
-    override init(frame: CGRect) {
-        super.init(frame: frame)
+    
+    override init(reuseIdentifier: String?) {
+        super.init(reuseIdentifier: reuseIdentifier)
+        backgroundColor = .white
         addSubview(profilePhotoButton)
         autoLayout()
-        
         profilePhotoButton.addTarget(self, action: #selector(didTapProfilePhotoButton), for: .touchUpInside)
-
+        
     }
     
     required init?(coder: NSCoder) {
@@ -51,7 +58,7 @@ class EditProfileHeaderView: UIView {
     // MARK: - Methods
     
     @objc private func didTapProfilePhotoButton() {
-        changeProfilePhoto?()
+        delegate?.changeProfileImage()
     }
-
+    
 }

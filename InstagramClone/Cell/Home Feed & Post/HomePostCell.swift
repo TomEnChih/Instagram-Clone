@@ -32,7 +32,7 @@ class HomePostCell: UICollectionViewCell {
             usernameLabel.text = post?.user.username
             
             guard let profileImageURL = post?.user.profileImageURL else { return }
-            
+            userProfileImageView.image = nil
             userProfileImageView.loadingImage(url: URL(string: profileImageURL)!)
                         
             setupAttributedCaption()

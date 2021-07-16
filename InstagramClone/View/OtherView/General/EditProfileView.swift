@@ -16,7 +16,10 @@ class EditProfileView: UIView {
     
     let editProfileTableView: UITableView = {
         let tv = UITableView()
-        tv.register(FormTableViewCell.self, forCellReuseIdentifier: FormTableViewCell.cellKey)
+        tv.register(EditProfileCell.self, forCellReuseIdentifier: EditProfileCell.id)
+        tv.register(EditProfileHeaderView.self, forHeaderFooterViewReuseIdentifier: EditProfileHeaderView.id)
+        tv.keyboardDismissMode = .interactive
+        tv.separatorStyle = .none
         
         return tv
     }()
@@ -26,7 +29,7 @@ class EditProfileView: UIView {
     func autoLayout() {
         editProfileTableView.snp.makeConstraints { (make) in
             make.top.equalTo(self.snp_topMargin)
-            make.right.left.bottom.equalTo(self)
+            make.bottom.left.right.equalTo(self)
         }
     }
 
@@ -34,7 +37,6 @@ class EditProfileView: UIView {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        backgroundColor = .white
         addSubview(editProfileTableView)
         autoLayout()
     }

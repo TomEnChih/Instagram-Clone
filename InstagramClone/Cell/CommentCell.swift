@@ -70,7 +70,7 @@ class CommentCell: UITableViewCell {
         separateView.snp.makeConstraints { (make) in
             make.bottom.equalTo(self)
             make.left.equalTo(contentLabel)
-            make.right.equalTo(self)
+            make.right.equalTo(self).offset(-10)
             make.height.equalTo(1)
         }
         
