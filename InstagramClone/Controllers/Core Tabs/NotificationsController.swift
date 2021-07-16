@@ -65,8 +65,8 @@ class NotificationsController: UIViewController {
             
             dictionaries.forEach { (key, value) in
                 guard let dictionary = value as? [String:Any] else { return }
-                let post = PostTest(user: user, dictionary: dictionary) //自己的post
-                
+                var post = PostTest(user: user, dictionary: dictionary) //自己的post
+                post.id = key /// comment 編號
                 let likeRef = Database.database().reference().child("likes").child(key)
                 likeRef.observeSingleEvent(of: .value) { (snapshot) in
                     guard let likeDictionary = snapshot.value as? [String:Any] else { return }
@@ -170,14 +170,20 @@ extension NotificationsController: UITableViewDelegate,UITableViewDataSource {
     
 }
 
-//MARK: - NotificaionLikeEventTableViewCellDelegate,NotificaionFollowEventTableViewCellDelegate
+//MARK: - NotificaionLikeEventTableViewCellDelegate
 extension NotificationsController: NotificaionLikeEventTableViewCellDelegate {
     
     func didTapRelatedPostButton(model: UserNotification) {
-        
-        
         // open the post
         print("打開 post")
+        switch model.type {
+        case .like(let post):
+            let vc = PostController(with: post)
+//            let navVC = UINavigationController(rootViewController: vc)
+            vc.modalPresentationStyle = .fullScreen
+            navigationController?.pushViewController(vc, animated: true)
+        case .follow: break
+        }
     }
     
     
