@@ -179,7 +179,6 @@ extension NotificationsController: NotificaionLikeEventTableViewCellDelegate {
         switch model.type {
         case .like(let post):
             let vc = PostController(with: post)
-//            let navVC = UINavigationController(rootViewController: vc)
             vc.modalPresentationStyle = .fullScreen
             navigationController?.pushViewController(vc, animated: true)
         case .follow: break

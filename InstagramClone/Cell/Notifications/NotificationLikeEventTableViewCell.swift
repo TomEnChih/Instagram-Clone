@@ -43,7 +43,6 @@ class NotificationLikeEventTableViewCell: UITableViewCell {
     
     private let postButton: CustomButton = {
         let button = CustomButton()
-        button.backgroundColor = .systemRed
         button.layer.borderWidth = 1
         button.layer.borderColor = UIColor.lightGray.cgColor
         return button

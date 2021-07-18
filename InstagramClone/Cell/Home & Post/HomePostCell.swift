@@ -10,6 +10,7 @@ import UIKit
 protocol HomePostButtonDelegate: AnyObject {
     func didTapLike(for cell: HomePostCell)
     func didTapComment(post: PostTest)
+    func didTapSave(for cell: HomePostCell)
 }
 
 
@@ -24,8 +25,8 @@ class HomePostCell: UICollectionViewCell {
     var post: PostTest? {
         didSet {
             guard let postImage = post?.imageURL else { return }
-            
-            likeButton.setImage(post?.hasLiked == true ? setLikeButtonImage(btn: likeButton, select: .like):setLikeButtonImage(btn: likeButton, select: .Unlike), for: .normal)
+            likeButton.setImage(post?.hasLiked == true ? setLikeButtonImage(btn: likeButton, select: .Like):setLikeButtonImage(btn: likeButton, select: .Unlike), for: .normal)
+            bookmarkButton.setImage(post?.hasSaved == true ? setBookMarkButtonImage(btn: bookmarkButton, select: .Save):setBookMarkButtonImage(btn: bookmarkButton, select: .UnSave), for: .normal)
         
             postImageView.loadingImage(url: URL(string: postImage)!)
             
@@ -47,7 +48,7 @@ class HomePostCell: UICollectionViewCell {
         let imageView = CustomImageView()
         imageView.layer.masksToBounds = true
         imageView.contentMode = .scaleAspectFit
-        imageView.backgroundColor = .red
+        imageView.backgroundColor = .lightGray
         return imageView
     }()
     
@@ -115,7 +116,7 @@ class HomePostCell: UICollectionViewCell {
         return stackView
     }()
     
-    private let bookmarlButton: UIButton = {
+    private let bookmarkButton: UIButton = {
         let btn = UIButton()
         
         let config = UIImage.SymbolConfiguration(pointSize: 25, weight: .thin)
@@ -170,7 +171,7 @@ class HomePostCell: UICollectionViewCell {
             make.width.equalTo(150)
         }
         
-        bookmarlButton.snp.makeConstraints { (make) in
+        bookmarkButton.snp.makeConstraints { (make) in
             make.centerY.equalTo(buttonStackView)
             make.right.equalTo(-10)
             make.height.equalTo(50)
@@ -197,11 +198,12 @@ class HomePostCell: UICollectionViewCell {
         addSubview(optionButton)
         addSubview(postImageView)
         addSubview(buttonStackView)
-        addSubview(bookmarlButton)
+        addSubview(bookmarkButton)
         addSubview(captionLabel)
         autoLayout()
         commentButton.addTarget(self, action: #selector(handleComment), for: .touchUpInside)
         likeButton.addTarget(self, action: #selector(handleLike), for: .touchUpInside)
+        bookmarkButton.addTarget(self, action: #selector(handleSave), for: .touchUpInside)
     }
     
     required init?(coder: NSCoder) {
@@ -223,7 +225,7 @@ class HomePostCell: UICollectionViewCell {
         attributedText.append(NSMutableAttributedString(string: "\n\n", attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 4)]))
         
         
-        let timeAgoDisplay = post.creationDate.description
+        let timeAgoDisplay = post.creationDate.compareCurrentTime()
         attributedText.append(NSMutableAttributedString(string: timeAgoDisplay, attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 14),NSAttributedString.Key.foregroundColor:UIColor.lightGray]))
         
         captionLabel.attributedText = attributedText
@@ -239,9 +241,13 @@ class HomePostCell: UICollectionViewCell {
         delegate?.didTapComment(post: post)
     }
     
-    private func setLikeButtonImage(btn: UIButton,select:Select) -> UIImage{
+    @objc func handleSave() {
+        delegate?.didTapSave(for: self)
+    }
+    
+    private func setLikeButtonImage(btn: UIButton,select:LikeSelect) -> UIImage{
         switch select {
-        case .like:
+        case .Like:
             let config = UIImage.SymbolConfiguration(pointSize: 25, weight: .thin)
             let image = UIImage(systemName: select.rawValue, withConfiguration: config)
             btn.tintColor = .systemPink
@@ -254,8 +260,30 @@ class HomePostCell: UICollectionViewCell {
         }
     }
     
-    enum Select: String {
-        case like = "heart.fill"
+    enum LikeSelect: String {
+        case Like = "heart.fill"
         case Unlike = "heart"
     }
+    
+    private func setBookMarkButtonImage(btn: UIButton,select:SaveSelect) -> UIImage{
+        switch select {
+        case .Save:
+            let config = UIImage.SymbolConfiguration(pointSize: 25, weight: .thin)
+            let image = UIImage(systemName: select.rawValue, withConfiguration: config)
+            btn.tintColor = .systemBlue
+            return image!
+        case .UnSave:
+            let config = UIImage.SymbolConfiguration(pointSize: 25, weight: .thin)
+            let image = UIImage(systemName: select.rawValue, withConfiguration: config)
+            btn.tintColor = .black
+            return image!
+        }
+    }
+    
+    enum SaveSelect: String {
+        case Save = "bookmark.fill"
+        case UnSave = "bookmark"
+    }
+    
+    
 }

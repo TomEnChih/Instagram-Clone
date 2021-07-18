@@ -17,6 +17,7 @@ class HomeController: UIViewController {
     
     private var posts = [PostTest]()
     
+    var refreshControl: UIRefreshControl!
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
@@ -28,13 +29,9 @@ class HomeController: UIViewController {
         homeView.homeCollectionView.dataSource = self
         
         setupNavigationItems()
+        setupRefreshControl()
         fetchPosts()
 //        fetchFollowingUserEmail()
-        
-        let refreshController = UIRefreshControl()
-        homeView.homeCollectionView.addSubview(refreshController)
-        refreshController.tintColor = .black
-        refreshController.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
         
         NotificationCenter.default.addObserver(self, selector: #selector(handleUpdateFeed), name: SharePhotoController.updateFeedNotificationName , object: nil)
     }
@@ -45,8 +42,13 @@ class HomeController: UIViewController {
         let titleImageView = UIImageView(image: UIImage(named: "text"))
         titleImageView.contentMode = .scaleAspectFit
         navigationItem.titleView = titleImageView
-        
-        navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "camera"), style: .plain, target: self, action: #selector(handleCamera))
+    }
+    
+    private func setupRefreshControl() {
+        refreshControl = UIRefreshControl()
+        homeView.homeCollectionView.addSubview(refreshControl)
+        refreshControl.tintColor = .black
+        refreshControl.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
     }
     
     private func handleNotAuthenticated() {
@@ -77,7 +79,7 @@ class HomeController: UIViewController {
         
         ref.observeSingleEvent(of: .value) { (snapshot) in
             
-            self.homeView.homeCollectionView.refreshControl?.endRefreshing()
+            self.refreshControl.endRefreshing()
             
             guard let dictionaries = snapshot.value as? [String:Any] else { return }
             
@@ -91,12 +93,13 @@ class HomeController: UIViewController {
                 let safeUserEmail = email.safeDatabaseKey()
                 
                 Database.database().reference().child("likes").child(key).child(safeUserEmail).observeSingleEvent(of: .value) { (snapshot) in
-                    
+                    print(post.id,snapshot.value)
                     if let value = snapshot.value as? Int,value == 1 {
                         post.hasLiked = true
                     } else {
                         post.hasLiked = false
                     }
+                    print(post.id,snapshot.value,post.hasLiked)
                 }
                 
                 self.posts.append(post)
@@ -131,11 +134,6 @@ class HomeController: UIViewController {
     
     @objc func handleUpdateFeed() {
         handleRefresh()
-    }
-    
-    @objc func handleCamera() {
-        let vc = CameraController()
-        present(vc, animated: true, completion: nil)
     }
     
 }
@@ -200,6 +198,28 @@ extension HomeController: HomePostButtonDelegate {
         vc.post = post
         vc.modalPresentationStyle = .fullScreen
         navigationController?.pushViewController(vc, animated: true)
+    }
+    
+    func didTapSave(for cell: HomePostCell) {
+        guard let indexPath = homeView.homeCollectionView.indexPath(for: cell) else { return }
+        
+        var post = posts[indexPath.item]
+        
+        guard let postId = post.id else { return }
+        guard let email = Auth.auth().currentUser?.email else { return }
+        let safeEmail = email.safeDatabaseKey()
+        let values = [safeEmail: post.hasSaved == true ? 0 : 1]
+        
+        Database.database().reference().child("save").child(postId).updateChildValues(values) { (error, ref) in
+            if let error = error {
+                print("Failed to save post:",error)
+                return
+            }
+            print("Successfully saved post.")
+            post.hasSaved = !post.hasSaved
+            self.posts[indexPath.item] = post
+            self.homeView.homeCollectionView.reloadItems(at: [indexPath])
+        }
     }
     
     

@@ -245,7 +245,7 @@ class UserProfileHeader: UICollectionReusableView {
         }
         
         if editProfileFollowButton.titleLabel?.text == "Unfollow" {
-            //unfollow
+            //unfollowing
             let ref = Database.database().reference().child("following").child(safeCurrentEmail).child(safeUserEmail)
             ref.removeValue { (error, ref) in
                 if let error = error {
@@ -267,7 +267,7 @@ class UserProfileHeader: UICollectionReusableView {
             }
             
         } else {
-            //follow
+            //following
             let value = [safeUserEmail: 1]
             let ref = Database.database().reference().child("following").child(safeCurrentEmail)
             ref.updateChildValues(value, withCompletionBlock: { (error, ref) in

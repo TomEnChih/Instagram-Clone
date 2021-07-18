@@ -20,6 +20,10 @@
 		D932A1582692C7FA007513CF /* CommentCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D932A1572692C7FA007513CF /* CommentCell.swift */; };
 		D98F9EA426A1DEB30030EBBD /* NotificationNoCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D98F9EA326A1DEB30030EBBD /* NotificationNoCell.swift */; };
 		D98F9EA826A2129E0030EBBD /* PostController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D98F9EA726A2129E0030EBBD /* PostController.swift */; };
+		D98F9EAC26A336CB0030EBBD /* ProfileListController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D98F9EAB26A336CB0030EBBD /* ProfileListController.swift */; };
+		D98F9EB026A422340030EBBD /* Comment.swift in Sources */ = {isa = PBXBuildFile; fileRef = D98F9EAF26A422340030EBBD /* Comment.swift */; };
+		D98F9EB326A4224F0030EBBD /* Post.swift in Sources */ = {isa = PBXBuildFile; fileRef = D98F9EB226A4224F0030EBBD /* Post.swift */; };
+		D98F9EB626A422A20030EBBD /* ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D98F9EB526A422A20030EBBD /* ViewModel.swift */; };
 		D99E3518268983A300723977 /* UserProfileHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D99E3517268983A300723977 /* UserProfileHeader.swift */; };
 		D9A03BE0269FE47100C01AEB /* CommentTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9A03BDF269FE47100C01AEB /* CommentTextView.swift */; };
 		D9C3331C2696B4EF0055A3CC /* Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C3331B2696B4EF0055A3CC /* Extension.swift */; };
@@ -81,6 +85,10 @@
 		D932A1572692C7FA007513CF /* CommentCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentCell.swift; sourceTree = "<group>"; };
 		D98F9EA326A1DEB30030EBBD /* NotificationNoCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationNoCell.swift; sourceTree = "<group>"; };
 		D98F9EA726A2129E0030EBBD /* PostController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostController.swift; sourceTree = "<group>"; };
+		D98F9EAB26A336CB0030EBBD /* ProfileListController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileListController.swift; sourceTree = "<group>"; };
+		D98F9EAF26A422340030EBBD /* Comment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Comment.swift; sourceTree = "<group>"; };
+		D98F9EB226A4224F0030EBBD /* Post.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Post.swift; sourceTree = "<group>"; };
+		D98F9EB526A422A20030EBBD /* ViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModel.swift; sourceTree = "<group>"; };
 		D99E3517268983A300723977 /* UserProfileHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileHeader.swift; sourceTree = "<group>"; };
 		D9A03BDF269FE47100C01AEB /* CommentTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentTextView.swift; sourceTree = "<group>"; };
 		D9C3331B2696B4EF0055A3CC /* Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extension.swift; sourceTree = "<group>"; };
@@ -161,12 +169,12 @@
 			path = Notifications;
 			sourceTree = "<group>";
 		};
-		D99E350A2689744F00723977 /* Home Feed & Post */ = {
+		D99E350A2689744F00723977 /* Home & Post */ = {
 			isa = PBXGroup;
 			children = (
 				D9C33350269B259B0055A3CC /* HomePostCell.swift */,
 			);
-			path = "Home Feed & Post";
+			path = "Home & Post";
 			sourceTree = "<group>";
 		};
 		D99E35152689807B00723977 /* ProfileCell */ = {
@@ -287,6 +295,9 @@
 			isa = PBXGroup;
 			children = (
 				D9C993212685FEA8003D6D70 /* Model.swift */,
+				D98F9EB226A4224F0030EBBD /* Post.swift */,
+				D98F9EAF26A422340030EBBD /* Comment.swift */,
+				D98F9EB526A422A20030EBBD /* ViewModel.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -313,6 +324,7 @@
 			isa = PBXGroup;
 			children = (
 				D9C992CE2685A3E1003D6D70 /* EditProfileController.swift */,
+				D98F9EAB26A336CB0030EBBD /* ProfileListController.swift */,
 				D9C992D12685A3F2003D6D70 /* SettingsVC.swift */,
 				D9C992D42685A401003D6D70 /* ListVC.swift */,
 				D98F9EA726A2129E0030EBBD /* PostController.swift */,
@@ -365,7 +377,7 @@
 			isa = PBXGroup;
 			children = (
 				D9046F8B268B14FB00B6C5C7 /* Notifications */,
-				D99E350A2689744F00723977 /* Home Feed & Post */,
+				D99E350A2689744F00723977 /* Home & Post */,
 				D99E35152689807B00723977 /* ProfileCell */,
 				D9C9933526861614003D6D70 /* EditProfileCell.swift */,
 				D9046F81268ADBEA00B6C5C7 /* UserFollowTableViewCell.swift */,
@@ -510,6 +522,7 @@
 				D9C993162685F76B003D6D70 /* SettingsView.swift in Sources */,
 				D92923E0269BEC8F00FB1D25 /* UserSearchCell.swift in Sources */,
 				D9C992D22685A3F2003D6D70 /* SettingsVC.swift in Sources */,
+				D98F9EB626A422A20030EBBD /* ViewModel.swift in Sources */,
 				D9C3333A2699E2F20055A3CC /* UserProfilePhotoCell.swift in Sources */,
 				D98F9EA426A1DEB30030EBBD /* NotificationNoCell.swift in Sources */,
 				D9C992B42685A0F4003D6D70 /* NotificationsController.swift in Sources */,
@@ -517,6 +530,7 @@
 				D9C333262696F0C00055A3CC /* PhotoSelectorCell.swift in Sources */,
 				D9C993392686164D003D6D70 /* EditProfileHeaderView.swift in Sources */,
 				D9046F91268B157400B6C5C7 /* NotificationLikeEventTableViewCell.swift in Sources */,
+				D98F9EAC26A336CB0030EBBD /* ProfileListController.swift in Sources */,
 				D9E6AF26269D650200D334FE /* CameraView.swift in Sources */,
 				D9C992BE2685A1A0003D6D70 /* LoginController.swift in Sources */,
 				D9C992C62685A274003D6D70 /* TabBarController.swift in Sources */,
@@ -528,6 +542,7 @@
 				D9C993022685B2E7003D6D70 /* AuthManager.swift in Sources */,
 				D932A1502692BCAF007513CF /* PostCommentController.swift in Sources */,
 				D9C9929326832BB4003D6D70 /* AppDelegate.swift in Sources */,
+				D98F9EB026A422340030EBBD /* Comment.swift in Sources */,
 				D9C3334B269B23DD0055A3CC /* HomeController.swift in Sources */,
 				D9C9930F2685CA8A003D6D70 /* RegistrationView.swift in Sources */,
 				D9C992DE2685A477003D6D70 /* PostEditorVC.swift in Sources */,
@@ -536,6 +551,7 @@
 				D9C3333D2699EFC80055A3CC /* CustomImageView.swift in Sources */,
 				D99E3518268983A300723977 /* UserProfileHeader.swift in Sources */,
 				D9C992E12685A4A4003D6D70 /* CameraController.swift in Sources */,
+				D98F9EB326A4224F0030EBBD /* Post.swift in Sources */,
 				D9C3334E269B24690055A3CC /* HomeView.swift in Sources */,
 				D9046F8D268B155300B6C5C7 /* NotificationFollowEventTableViewCell.swift in Sources */,
 				D9C33351269B259B0055A3CC /* HomePostCell.swift in Sources */,

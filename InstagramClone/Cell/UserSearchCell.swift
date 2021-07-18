@@ -31,7 +31,7 @@ class UserSearchCell: UICollectionViewCell {
         let imageView = CustomImageView()
         imageView.layer.masksToBounds = true
         imageView.contentMode = .scaleAspectFit
-        imageView.backgroundColor = .red
+        imageView.backgroundColor = .lightGray
         return imageView
     }()
     

@@ -1,53 +1,62 @@
 //
-//  PostController.swift
+//  ProfileListController.swift
 //  InstagramClone
 //
-//  Created by 董恩志 on 2021/7/17.
+//  Created by 董恩志 on 2021/7/18.
 //
 
 import UIKit
 import FirebaseAuth
 import FirebaseDatabase
 
-class PostController: UIViewController {
-    
+class ProfileListController: UIViewController {
+
     // MARK: - Properties
     
-    private let postView = HomeView()
+    private let listView = HomeView()
     
-//    var postTest: PostTest
+    private var posts: [PostTest]
+    private var index: IndexPath
     
-    var posts = [PostTest]()
+    var isUsed = false
     // MARK: - Init
     
-    init(with post: PostTest) {
-//        self.postTest = post
-        self.posts.append(post)
+    init(posts: [PostTest],index: IndexPath) {
+        self.posts = posts
+        self.index = index
         super.init(nibName: nil, bundle: nil)
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view = postView
-        
-        postView.homeCollectionView.delegate = self
-        postView.homeCollectionView.dataSource = self
+        view = listView
+        setupNavigationItems()
+        listView.homeCollectionView.delegate = self
+        listView.homeCollectionView.dataSource = self
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        if !isUsed {
+            listView.homeCollectionView.scrollToItem(at: index, at: .centeredVertically, animated: true)
+            isUsed = !isUsed
+        }
+    }
 
     // MARK: - Methods
     
-    
+    private func setupNavigationItems() {
+        self.navigationItem.title = "Posts"
+    }
 }
 
 //MARK: - UICollectionViewDataSource,UICollectionViewDelegateFlowLayout
-extension PostController: UICollectionViewDataSource,UICollectionViewDelegateFlowLayout {
+extension ProfileListController: UICollectionViewDataSource,UICollectionViewDelegateFlowLayout {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         posts.count
@@ -59,6 +68,7 @@ extension PostController: UICollectionViewDataSource,UICollectionViewDelegateFlo
         
         cell.delegate = self
         cell.post = posts[indexPath.item]
+        
         return cell
     }
     
@@ -74,10 +84,10 @@ extension PostController: UICollectionViewDataSource,UICollectionViewDelegateFlo
 }
 
 //MARK: - HomePostButtonDelegate
-extension PostController: HomePostButtonDelegate {
+extension ProfileListController: HomePostButtonDelegate {
     
     func didTapLike(for cell: HomePostCell) {
-        guard let indexPath = postView.homeCollectionView.indexPath(for: cell) else { return }
+        guard let indexPath = listView.homeCollectionView.indexPath(for: cell) else { return }
         
         var post = posts[indexPath.item]
         
@@ -94,7 +104,7 @@ extension PostController: HomePostButtonDelegate {
             print("Successfully liked post.")
             post.hasLiked = !post.hasLiked ///post 跟 posts 無關，需要把他帶換掉 posts[indexPath.item]
             self.posts[indexPath.item] = post
-            self.postView.homeCollectionView.reloadItems(at: [indexPath])
+            self.listView.homeCollectionView.reloadItems(at: [indexPath])
         }
 
     }
@@ -108,7 +118,25 @@ extension PostController: HomePostButtonDelegate {
     }
     
     func didTapSave(for cell: HomePostCell) {
-        print("Save...")
+        guard let indexPath = listView.homeCollectionView.indexPath(for: cell) else { return }
+        
+        var post = posts[indexPath.item]
+        
+        guard let postId = post.id else { return }
+        guard let email = Auth.auth().currentUser?.email else { return }
+        let safeEmail = email.safeDatabaseKey()
+        let values = [safeEmail: post.hasSaved == true ? 0 : 1]
+        
+        Database.database().reference().child("save").child(postId).updateChildValues(values) { (error, ref) in
+            if let error = error {
+                print("Failed to save post:",error)
+                return
+            }
+            print("Successfully saved post.")
+            post.hasSaved = !post.hasSaved
+            self.posts[indexPath.item] = post
+            self.listView.homeCollectionView.reloadItems(at: [indexPath])
+        }
     }
     
     

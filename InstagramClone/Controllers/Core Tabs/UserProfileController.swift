@@ -22,7 +22,7 @@ class UserProfileController: UIViewController {
     var userEmail: String?
     
     var isGridView = true
-    var isFinishedPaging = false
+//    var isFinishedPaging = false
     
     var following = "" {
         didSet {
@@ -119,54 +119,54 @@ class UserProfileController: UIViewController {
         }
     }
     
-    func peginatePosts() {
-        guard let email = self.user?.email else { return }
-        let safeEmail = email.safeDatabaseKey()
-        
-        let ref = Database.database().reference().child("posts").child(safeEmail)
-        //        var query = ref.queryOrdered(byChild: "creationDate")
-        var query = ref.queryOrderedByKey()
-        
-        if posts.count > 0 {
-            let value = posts.last?.id
-            
-            //            let value = posts.last?.creationDate.timeIntervalSince1970
-            query = query.queryEnding (atValue: value)
-        }
-        
-        query.queryLimited(toLast: 4).observeSingleEvent(of: .value) { (snapshot) in
-            
-            guard var allObjects = snapshot.children.allObjects as? [DataSnapshot] else { return }
-            
-            allObjects.reverse()
-            
-            if allObjects.count < 4 {
-                self.isFinishedPaging = true
-            }
-            
-            if self.posts.count > 0 && allObjects.count > 0 {
-                allObjects .removeFirst()
-            }
-            
-            guard let user = self.user else { return }
-            
-            allObjects.forEach({ (snapshot) in
-                guard let dictionary = snapshot.value as? [String:Any] else { return }
-                var post = PostTest(user: user, dictionary: dictionary)
-                
-                post.id = snapshot.key
-                self.posts.append(post)
-            })
-            self.posts.forEach { (post) in
-                print("postid:",post.id)
-            }
-            
-            self.posts.sort { (p1, p2) -> Bool in
-                return p1.creationDate.compare(p2.creationDate) == .orderedAscending
-            }
-            self.userProfileView.prfileCollectionView.reloadData()
-        }
-    }
+//    func peginatePosts() {
+//        guard let email = self.user?.email else { return }
+//        let safeEmail = email.safeDatabaseKey()
+//
+//        let ref = Database.database().reference().child("posts").child(safeEmail)
+//        //        var query = ref.queryOrdered(byChild: "creationDate")
+//        var query = ref.queryOrderedByKey()
+//
+//        if posts.count > 0 {
+//            let value = posts.last?.id
+//
+//            //            let value = posts.last?.creationDate.timeIntervalSince1970
+//            query = query.queryEnding (atValue: value)
+//        }
+//
+//        query.queryLimited(toLast: 4).observeSingleEvent(of: .value) { (snapshot) in
+//
+//            guard var allObjects = snapshot.children.allObjects as? [DataSnapshot] else { return }
+//
+//            allObjects.reverse()
+//
+//            if allObjects.count < 4 {
+//                self.isFinishedPaging = true
+//            }
+//
+//            if self.posts.count > 0 && allObjects.count > 0 {
+//                allObjects .removeFirst()
+//            }
+//
+//            guard let user = self.user else { return }
+//
+//            allObjects.forEach({ (snapshot) in
+//                guard let dictionary = snapshot.value as? [String:Any] else { return }
+//                var post = PostTest(user: user, dictionary: dictionary)
+//
+//                post.id = snapshot.key
+//                self.posts.append(post)
+//            })
+//            self.posts.forEach { (post) in
+//                print("postid:",post.id)
+//            }
+//
+//            self.posts.sort { (p1, p2) -> Bool in
+//                return p1.creationDate.compare(p2.creationDate) == .orderedAscending
+//            }
+//            self.userProfileView.prfileCollectionView.reloadData()
+//        }
+//    }
     
     
     
@@ -187,6 +187,10 @@ class UserProfileController: UIViewController {
             self.posts.insert(post, at: 0)
             self.userProfileView.prfileCollectionView.reloadData()
         }
+    }
+    
+    func fetchSavedPosts() {
+        
     }
     
 }
@@ -238,7 +242,9 @@ extension UserProfileController: UICollectionViewDelegateFlowLayout, UICollectio
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        
+        let vc = ProfileListController(posts: posts, index: indexPath)
+        vc.modalPresentationStyle = .formSheet
+        navigationController?.pushViewController(vc, animated: true)
     }
     
     
@@ -271,7 +277,6 @@ extension UserProfileController: UICollectionViewDelegateFlowLayout, UICollectio
         return headerView.systemLayoutSizeFitting(CGSize(width: collectionView.frame.width, height: UIView.layoutFittingExpandedSize.height),
                                                   withHorizontalFittingPriority: .required, // Width is fixed
                                                   verticalFittingPriority: .fittingSizeLevel) // Height can be as large as needed
-        //                return CGSize(width: userProfileView.prfileCollectionView.frame.width, height: 400)
     }
     
 }
