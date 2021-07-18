@@ -13,21 +13,27 @@ class PostCommentController: UIViewController {
     
     // MARK: - Properties
     
-    var post: PostTest?
-    var comments = [Comment]()
+    var post: PostTest
+    var comments = [Observable<Comment>]() {
+        didSet {
+            postCommentView.commentTableView.reloadData()
+        }
+    }
+    
     private let postCommentView = PostCommentView()
     private let postCommentBottomView = PostCommentBottomView()
     
     // MARK: - Init
     
-//    init() {
-//        super.init(nibName: nil, bundle: nil)
-//    }
-//
-//    required init?(coder: NSCoder) {
-//        fatalError("init(coder:) has not been implemented")
-//    }
-//
+    init(post: PostTest) {
+        self.post = post
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
@@ -67,14 +73,13 @@ class PostCommentController: UIViewController {
     }
     
     private func fetchComments() {
-        guard let postId = post?.id else { return }
+        guard let postId = post.id else { return }
         let ref = Database.database().reference().child("comments").child(postId)
         ref.observe(.childAdded) { (snapshot) in
             guard let dictionary = snapshot.value as? [String:Any] else { return }
             guard let email = dictionary["email"] as? String else { return }
             Database.fetchUserWithEmail(with: email) { (user) in
-                let  comment = Comment(user: user, dictionary: dictionary)
-                
+                let comment = Observable<Comment>(Comment(user: user, dictionary: dictionary))
                 self.comments.append(comment)
                 self.postCommentView.commentTableView.reloadData()
             }
@@ -86,7 +91,7 @@ class PostCommentController: UIViewController {
         postCommentBottomView.didTapSendButton = {
             guard let email = Auth.auth().currentUser?.email else { return }
             let safeEmail = email.safeDatabaseKey()
-            guard let postId = self.post?.id else { return }
+            guard let postId = self.post.id else { return }
             
             let values = ["text": self.postCommentBottomView.commentTextView.text ?? "error",
                           "creationDate": Date().timeIntervalSince1970,
@@ -121,7 +126,11 @@ extension PostCommentController: UITableViewDelegate,UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: CommentCell.id, for: indexPath) as! CommentCell
         
 //        cell.configure(with: comment)
-        cell.comment = comments[indexPath.row]
+        let comment = comments[indexPath.row]
+        
+        comment.bind { (comment) in
+            cell.configure(with: comment!)
+        }
         
         return cell
     }

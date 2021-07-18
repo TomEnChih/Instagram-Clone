@@ -16,7 +16,7 @@ enum UserNotificationType {
 
 struct UserNotification {
     let type: UserNotificationType
-//    let text: String
+    //    let text: String
     let user: UserTest
 }
 
@@ -26,11 +26,10 @@ class NotificationsController: UIViewController {
     // MARK: - Properties
     
     private let notificationsView = NotificationsView()
-        
-    private var models = [UserNotification]()
+    
+    private var models = [Observable<UserNotification>]()
     
     private var isModelsEmpty = true
-    // MARK: - Init
     
     // MARK: - Lifecycle
     
@@ -72,10 +71,10 @@ class NotificationsController: UIViewController {
                     guard let likeDictionary = snapshot.value as? [String:Any] else { return }
                     
                     likeDictionary.forEach { (key,value) in
-//                        print(post.caption,snapshot.key,key)
+                        //                        print(post.caption,snapshot.key,key)
                         guard key != safeEmail else { return }
                         Database.fetchUserWithEmail(with: key) { (user) in
-                            let model = UserNotification(type: .like(post: post), user: user)
+                            let model = Observable<UserNotification>(UserNotification(type: .like(post: post), user: user))
                             self.models.append(model)
                             self.handleView()
                             self.notificationsView.notificationsTableView.reloadData()
@@ -97,7 +96,7 @@ class NotificationsController: UIViewController {
             dictionary.forEach { (key,value) in
                 
                 Database.fetchUserWithEmail(with: key) { (user) in
-                    let model = UserNotification(type: .follow, user: user)
+                    let model = Observable<UserNotification>(UserNotification(type: .follow, user: user))
                     self.models.append(model)
                     self.handleView()
                     self.notificationsView.notificationsTableView.reloadData()
@@ -138,12 +137,15 @@ extension NotificationsController: UITableViewDelegate,UITableViewDataSource {
             
             let model = models[indexPath.row]
             
-            switch model.type {
+            switch model.value!.type {
+            
             case .like(_):
                 // like cell
                 let cell = tableView.dequeueReusableCell(withIdentifier: NotificationLikeEventTableViewCell.id, for: indexPath) as! NotificationLikeEventTableViewCell
                 
-                cell.configure(with: model)
+                model.bind { (model) in
+                    cell.configure(with: model!)
+                }
                 
                 cell.delegate = self
                 
@@ -152,12 +154,14 @@ extension NotificationsController: UITableViewDelegate,UITableViewDataSource {
                 // follow cell
                 let cell = tableView.dequeueReusableCell(withIdentifier: NotificationFollowEventTableViewCell.id, for: indexPath) as! NotificationFollowEventTableViewCell
                 
-                cell.configure(with: model)
-                                
+                model.bind { (model) in
+                    cell.configure(with: model!)
+                }
+                
                 return cell
+                
             }
         }
-    
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -167,7 +171,6 @@ extension NotificationsController: UITableViewDelegate,UITableViewDataSource {
             return 75
         }
     }
-    
 }
 
 //MARK: - NotificaionLikeEventTableViewCellDelegate
@@ -178,7 +181,8 @@ extension NotificationsController: NotificaionLikeEventTableViewCellDelegate {
         print("打開 post")
         switch model.type {
         case .like(let post):
-            let vc = PostController(with: post)
+            #warning("不確定這樣對不對 post")
+            let vc = PostController(with: Observable<PostTest>(post))
             vc.modalPresentationStyle = .fullScreen
             navigationController?.pushViewController(vc, animated: true)
         case .follow: break

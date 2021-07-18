@@ -15,13 +15,13 @@ class CommentCell: UITableViewCell {
     
     private let imageViewSize: CGFloat = 40
     
-    var comment: Comment? {
-        didSet {
-            guard let comment = comment else { return }
-            profileImageView.loadingImage(url: URL(string: comment.user.profileImageURL)!)
-            setupAttributedCaption()
-        }
-    }
+    var comment: Comment? //{
+//        didSet {
+//            guard let comment = comment else { return }
+//            profileImageView.loadingImage(url: URL(string: comment.user.profileImageURL)!)
+//            setupAttributedCaption()
+//        }
+//    }
     
     // MARK: - IBElements
     
@@ -98,8 +98,10 @@ class CommentCell: UITableViewCell {
     // MARK: - Methods
     
     public func configure(with model: Comment){
+        self.comment = model
         
-        
+        profileImageView.loadingImage(url: URL(string: model.user.profileImageURL)!)
+        setupAttributedCaption()
     }
     
     private func setupAttributedCaption() {

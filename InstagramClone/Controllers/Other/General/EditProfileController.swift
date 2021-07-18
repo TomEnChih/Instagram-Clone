@@ -157,10 +157,10 @@ extension EditProfileController: UITableViewDelegate,UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         configureModels()
-        let model = models[indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: EditProfileCell.id, for: indexPath) as!
             EditProfileCell
         
+        let model = models[indexPath.row]
         cell.configure(with: model, index: indexPath)
         cell.delegate = self
         

@@ -15,7 +15,11 @@ class HomeController: UIViewController {
     
     private let homeView = HomeView()
     
-    private var posts = [PostTest]()
+    private var posts = [Observable<PostTest>]() {
+        didSet {
+            homeView.homeCollectionView.reloadData()
+        }
+    }
     
     var refreshControl: UIRefreshControl!
     // MARK: - Lifecycle
@@ -86,26 +90,26 @@ class HomeController: UIViewController {
             dictionaries.forEach { (key, value) in
                 guard let dictionary = value as? [String:Any] else { return }
                 
-                var post = PostTest(user: user, dictionary: dictionary)
-                post.id = key ///用於 comment
+//                var post = PostTest(user: user, dictionary: dictionary)
+                let post = Observable<PostTest>(PostTest(user: user, dictionary: dictionary))
+                post.value?.id = key ///用於 comment
                 
                 guard let email = Auth.auth().currentUser?.email else { return }
                 let safeUserEmail = email.safeDatabaseKey()
                 
                 Database.database().reference().child("likes").child(key).child(safeUserEmail).observeSingleEvent(of: .value) { (snapshot) in
-                    print(post.id,snapshot.value)
                     if let value = snapshot.value as? Int,value == 1 {
-                        post.hasLiked = true
+                        post.value?.hasLiked = true
                     } else {
-                        post.hasLiked = false
+                        post.value?.hasLiked = false
                     }
-                    print(post.id,snapshot.value,post.hasLiked)
+                    print(post.value?.id,snapshot.value,post.value?.hasLiked)
                 }
                 
                 self.posts.append(post)
             }
             self.posts.sort { (p1, p2) -> Bool in
-                return p1.creationDate.compare(p2.creationDate) == .orderedDescending
+                return p1.value!.creationDate.compare(p2.value!.creationDate) == .orderedDescending
             }
             self.homeView.homeCollectionView.reloadData()
         }
@@ -150,7 +154,9 @@ extension HomeController: UICollectionViewDataSource,UICollectionViewDelegateFlo
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: HomePostCell.id, for: indexPath) as! HomePostCell
         
         cell.delegate = self
-        cell.post = posts[indexPath.item]
+        posts[indexPath.item].bind { (post) in
+            cell.configure(with: post!)
+        }
         
         return cell
     }
@@ -172,12 +178,12 @@ extension HomeController: HomePostButtonDelegate {
     func didTapLike(for cell: HomePostCell) {
         guard let indexPath = homeView.homeCollectionView.indexPath(for: cell) else { return }
         
-        var post = posts[indexPath.item]
+        let post = posts[indexPath.item]
         
-        guard let postId = post.id else { return }
+        guard let postId = post.value?.id else { return }
         guard let email = Auth.auth().currentUser?.email else { return }
         let safeEmail = email.safeDatabaseKey()
-        let values = [safeEmail: post.hasLiked == true ? 0 : 1]
+        let values = [safeEmail: post.value?.hasLiked == true ? 0 : 1]
         
         Database.database().reference().child("likes").child(postId).updateChildValues(values) { (error, ref) in
             if let error = error {
@@ -185,17 +191,15 @@ extension HomeController: HomePostButtonDelegate {
                 return
             }
             print("Successfully liked post.")
-            post.hasLiked = !post.hasLiked ///post 跟 posts 無關，需要把他帶換掉 posts[indexPath.item]
+            post.value?.hasLiked = !post.value!.hasLiked ///post 跟 posts 無關，需要把他帶換掉 posts[indexPath.item]
             self.posts[indexPath.item] = post
-            self.homeView.homeCollectionView.reloadItems(at: [indexPath])
+//            self.homeView.homeCollectionView.reloadItems(at: [indexPath])
         }
 
     }
     
     func didTapComment(post: PostTest) {
-        print(post.caption)
-        let vc = PostCommentController()
-        vc.post = post
+        let vc = PostCommentController(post: post)
         vc.modalPresentationStyle = .fullScreen
         navigationController?.pushViewController(vc, animated: true)
     }
@@ -203,12 +207,12 @@ extension HomeController: HomePostButtonDelegate {
     func didTapSave(for cell: HomePostCell) {
         guard let indexPath = homeView.homeCollectionView.indexPath(for: cell) else { return }
         
-        var post = posts[indexPath.item]
+        let post = posts[indexPath.item]
         
-        guard let postId = post.id else { return }
+        guard let postId = post.value?.id else { return }
         guard let email = Auth.auth().currentUser?.email else { return }
         let safeEmail = email.safeDatabaseKey()
-        let values = [safeEmail: post.hasSaved == true ? 0 : 1]
+        let values = [safeEmail: post.value?.hasSaved == true ? 0 : 1]
         
         Database.database().reference().child("save").child(postId).updateChildValues(values) { (error, ref) in
             if let error = error {
@@ -216,9 +220,9 @@ extension HomeController: HomePostButtonDelegate {
                 return
             }
             print("Successfully saved post.")
-            post.hasSaved = !post.hasSaved
+            post.value?.hasSaved = !post.value!.hasSaved
             self.posts[indexPath.item] = post
-            self.homeView.homeCollectionView.reloadItems(at: [indexPath])
+//            self.homeView.homeCollectionView.reloadItems(at: [indexPath])
         }
     }
     

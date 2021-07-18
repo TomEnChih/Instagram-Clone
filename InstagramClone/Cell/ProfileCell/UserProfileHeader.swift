@@ -25,18 +25,7 @@ class UserProfileHeader: UICollectionReusableView {
     
     weak var delegate: UserProfileButtonDelegate?
     
-    var user: UserTest? {
-        didSet {
-            
-            guard let profileImageURL = user?.profileImageURL else { return }
-            
-            profileImageView.loadingImage(url: URL(string: profileImageURL)!)
-            usernameLabel.text = user?.name
-            bioLabel.text = user?.bio
-            
-            setEditFollowButton()
-        }
-    }
+    var user: UserTest?
     
     // MARK: - IBElements
     private let profileImageView: CustomImageView = {
@@ -232,6 +221,25 @@ class UserProfileHeader: UICollectionReusableView {
     
     // MARK: - Methods
     
+    func configure(with model: UserTest,postCount: String,followerCount:String,followingCount: String,isGridView: Bool) {
+        
+        self.user = model
+        
+        postButton.setButtonTitle(String1: postCount, String2: "貼文")
+        followeringButton.setButtonTitle(String1: followingCount, String2: "追蹤中")
+        followersButton.setButtonTitle(String1: followerCount, String2: "粉絲")
+        gridButton.tintColor = isGridView ? .systemBlue: .lightGray
+        ListButton.tintColor = !isGridView ? .systemBlue: .lightGray
+        
+        
+        profileImageView.loadingImage(url: URL(string: model.profileImageURL)!)
+        usernameLabel.text = model.name
+        bioLabel.text = model.bio
+        
+        
+        setEditFollowButton()
+    }
+    
     @objc func handleEditProfileOrFollow() {
         guard let currentLoggedInUserEmail = Auth.auth().currentUser?.email else { return }
         let safeCurrentEmail = currentLoggedInUserEmail.safeDatabaseKey()
@@ -296,16 +304,12 @@ class UserProfileHeader: UICollectionReusableView {
     }
     
     @objc func handleChangeToGridView() {
-        gridButton.tintColor = .systemBlue
-        ListButton.tintColor = .lightGray
-        taggedButton.tintColor = .lightGray
+
         delegate?.didChangeToGridView()
     }
     
     @objc func handleChangeToListView() {
-        ListButton.tintColor = .systemBlue
-        taggedButton.tintColor = .lightGray
-        gridButton.tintColor = .lightGray
+
         delegate?.didChangeToListView()
     }
     
@@ -350,37 +354,5 @@ class UserProfileHeader: UICollectionReusableView {
         self.editProfileFollowButton.setTitleColor(.white, for: .normal)
     }
     
-    func setButtonTitle(String1: String, String2: String, button: UIButton){
-        //applying the line break mode
-        button.titleLabel?.lineBreakMode = NSLineBreakMode.byWordWrapping;
-        let buttonText: NSString = "\(String1)\n\(String2)" as NSString
-        
-        //getting the range to separate the button title strings
-        let newlineRange: NSRange = buttonText.range(of: "\n")
-        
-        //getting both substrings 為了分成兩個String
-        var substring1 = ""
-        var substring2 = ""
-        
-        if(newlineRange.location != NSNotFound) {
-            substring1 = buttonText.substring(to: newlineRange.location)
-            substring2 = buttonText.substring(from: newlineRange.location)
-        }
-        
-        //assigning diffrent fonts to both substrings
-        let font1: UIFont = UIFont.boldSystemFont(ofSize: 18)
-        let attributes1 = [NSMutableAttributedString.Key.font: font1]
-        let attrString1 = NSMutableAttributedString(string: substring1, attributes: attributes1)
-        
-        let font2: UIFont = UIFont.systemFont(ofSize: 15)
-        let attributes2 = [NSMutableAttributedString.Key.font: font2]
-        let attrString2 = NSMutableAttributedString(string: substring2, attributes: attributes2)
-        
-        //appending both attributed strings
-        attrString1.append(attrString2)
-        
-        //assigning the resultant attributed strings to the button
-        button.setAttributedTitle(attrString1, for: [])
-    }
     
 }

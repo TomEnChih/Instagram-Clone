@@ -14,15 +14,13 @@ class PostController: UIViewController {
     // MARK: - Properties
     
     private let postView = HomeView()
+        
+    var post: Observable<PostTest>
     
-//    var postTest: PostTest
-    
-    var posts = [PostTest]()
     // MARK: - Init
     
-    init(with post: PostTest) {
-//        self.postTest = post
-        self.posts.append(post)
+    init(with post: Observable<PostTest>) {
+        self.post = post
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -50,7 +48,7 @@ class PostController: UIViewController {
 extension PostController: UICollectionViewDataSource,UICollectionViewDelegateFlowLayout {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        posts.count
+        1
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -58,7 +56,10 @@ extension PostController: UICollectionViewDataSource,UICollectionViewDelegateFlo
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: HomePostCell.id, for: indexPath) as! HomePostCell
         
         cell.delegate = self
-        cell.post = posts[indexPath.item]
+        
+        post.bind { (post) in
+            cell.configure(with: post!)
+        }
         return cell
     }
     
@@ -78,13 +79,11 @@ extension PostController: HomePostButtonDelegate {
     
     func didTapLike(for cell: HomePostCell) {
         guard let indexPath = postView.homeCollectionView.indexPath(for: cell) else { return }
-        
-        var post = posts[indexPath.item]
-        
-        guard let postId = post.id else { return }
+                
+        guard let postId = post.value?.id else { return }
         guard let email = Auth.auth().currentUser?.email else { return }
         let safeEmail = email.safeDatabaseKey()
-        let values = [safeEmail: post.hasLiked == true ? 0 : 1]
+        let values = [safeEmail: post.value?.hasLiked == true ? 0 : 1]
         
         Database.database().reference().child("likes").child(postId).updateChildValues(values) { (error, ref) in
             if let error = error {
@@ -92,17 +91,15 @@ extension PostController: HomePostButtonDelegate {
                 return
             }
             print("Successfully liked post.")
-            post.hasLiked = !post.hasLiked ///post 跟 posts 無關，需要把他帶換掉 posts[indexPath.item]
-            self.posts[indexPath.item] = post
-            self.postView.homeCollectionView.reloadItems(at: [indexPath])
+            self.post.value?.hasLiked = !self.post.value!.hasLiked ///post 跟 posts 無關，需要把他帶換掉 posts[indexPath.item]
+//            self.postView.homeCollectionView.reloadItems(at: [indexPath])
         }
 
     }
     
     func didTapComment(post: PostTest) {
         print(post.caption)
-        let vc = PostCommentController()
-        vc.post = post
+        let vc = PostCommentController(post: post)
         vc.modalPresentationStyle = .fullScreen
         navigationController?.pushViewController(vc, animated: true)
     }

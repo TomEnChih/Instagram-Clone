@@ -22,23 +22,7 @@ class HomePostCell: UICollectionViewCell {
     
     private let imageViewSize: CGFloat = 40
     
-    var post: PostTest? {
-        didSet {
-            guard let postImage = post?.imageURL else { return }
-            likeButton.setImage(post?.hasLiked == true ? setLikeButtonImage(btn: likeButton, select: .Like):setLikeButtonImage(btn: likeButton, select: .Unlike), for: .normal)
-            bookmarkButton.setImage(post?.hasSaved == true ? setBookMarkButtonImage(btn: bookmarkButton, select: .Save):setBookMarkButtonImage(btn: bookmarkButton, select: .UnSave), for: .normal)
-        
-            postImageView.loadingImage(url: URL(string: postImage)!)
-            
-            usernameLabel.text = post?.user.username
-            
-            guard let profileImageURL = post?.user.profileImageURL else { return }
-            userProfileImageView.image = nil
-            userProfileImageView.loadingImage(url: URL(string: profileImageURL)!)
-                        
-            setupAttributedCaption()
-        }
-    }
+    var post: PostTest?
     
     weak var delegate: HomePostButtonDelegate?
     
@@ -211,6 +195,25 @@ class HomePostCell: UICollectionViewCell {
     }
     
     // MARK: - Methods
+    func configure(with post: PostTest) {
+        self.post = post
+        
+        likeButton.setImage(post.hasLiked == true ? setLikeButtonImage(btn: likeButton, select: .Like):setLikeButtonImage(btn: likeButton, select: .Unlike), for: .normal)
+        bookmarkButton.setImage(post.hasSaved == true ? setBookMarkButtonImage(btn: bookmarkButton, select: .Save):setBookMarkButtonImage(btn: bookmarkButton, select: .UnSave), for: .normal)
+        
+        postImageView.image = nil
+        postImageView.loadingImage(url: URL(string: post.imageURL)!)
+
+        usernameLabel.text = post.user.username
+
+        userProfileImageView.image = nil
+        userProfileImageView.loadingImage(url: URL(string: post.user.profileImageURL)!)
+
+        setupAttributedCaption()
+        
+        
+        
+    }
     
     private func setupAttributedCaption() {
         

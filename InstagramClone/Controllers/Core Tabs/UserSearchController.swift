@@ -15,8 +15,8 @@ class UserSearchController: UIViewController {
     
     private let userSearchView = UserSearchView()
     
-    private var users = [UserTest]()
-    private var filteredUsers = [UserTest]()
+    private var users = [Observable<UserTest>]()
+    private var filteredUsers = [Observable<UserTest>]()
     
     // MARK: - IBElements
     
@@ -86,13 +86,12 @@ class UserSearchController: UIViewController {
                 }
                 
                 guard let userDictionary = value as? [String:Any] else { return }
-                
-                let user = UserTest(email: key, dictionary: userDictionary)
+                let user = Observable<UserTest>(UserTest(email: key, dictionary: userDictionary))
                 self.users.append(user)
             }
             
             self.users.sort { (u1, u2) -> Bool in
-                return u1.username.compare(u2.username) == .orderedAscending
+                return u1.value?.username.compare(u2.value!.username) == .orderedAscending
             }
             self.filteredUsers = self.users
             self.userSearchView.userSearchCollectionView.reloadData()
@@ -112,7 +111,9 @@ extension UserSearchController: UICollectionViewDataSource,UICollectionViewDeleg
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: UserSearchCell.id, for: indexPath) as! UserSearchCell
         
-        cell.user = filteredUsers[indexPath.item]
+        filteredUsers[indexPath.item].bind { (user) in
+            cell.configure(with: user!)
+        }
         
         return cell
     }
@@ -123,9 +124,9 @@ extension UserSearchController: UICollectionViewDataSource,UICollectionViewDeleg
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let user = filteredUsers[indexPath.item]
+        let user = filteredUsers[indexPath.item].value
         let vc = UserProfileController()
-        vc.userEmail = user.email
+        vc.userEmail = user?.email
         navigationController?.pushViewController(vc, animated: true)
     }
     
@@ -142,7 +143,7 @@ extension UserSearchController: UISearchBarDelegate {
             filteredUsers = users
         } else {
             filteredUsers = users.filter { (user) -> Bool in
-                return user.username.lowercased().contains(searchText.lowercased())
+                return (user.value?.username.lowercased().contains(searchText.lowercased()))!
             }
         }
         

@@ -13,15 +13,6 @@ class UserProfilePhotoCell: UICollectionViewCell {
     
     static let id = "UserProfilePhotoCell"
     
-    var post: PostTest? {
-        didSet {
-            guard let imageURL = post?.imageURL else { return }
-            
-            photoImageView.loadingImage(url: URL(string: imageURL)!)
-            
-        }
-    }
-    
     // MARK: - IBElements
     
     let photoImageView: CustomImageView = {
@@ -54,4 +45,10 @@ class UserProfilePhotoCell: UICollectionViewCell {
     }
     
     // MARK: - Methods
+    
+    func configure(with model: PostTest) {
+        
+        photoImageView.image = nil
+        photoImageView.loadingImage(url: URL(string: model.imageURL)!)
+    }
 }

@@ -15,16 +15,6 @@ class UserSearchCell: UICollectionViewCell {
     
     private let imageViewSize: CGFloat = 40
     
-    var user: UserTest? {
-        didSet {
-            usernameLabel.text = user?.username
-            
-            guard let imageURL = user?.profileImageURL else { return }
-            
-            profileImageView.loadingImage(url: URL(string: imageURL)!)
-        }
-    }
-    
     // MARK: - IBElements
     
     private let profileImageView: CustomImageView = {
@@ -35,20 +25,21 @@ class UserSearchCell: UICollectionViewCell {
         return imageView
     }()
     
-    let usernameLabel: UILabel = {
+    private let usernameLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.boldSystemFont(ofSize: 15)
-        label.text = "@tom"
-        label.textColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
+        label.textColor = .black
         return label
     }()
     
-    let separaorView: UIView = {
+    private let separaorView: UIView = {
         let view = UIView()
         view.backgroundColor = .black
         return view
     }()
     
+    // MARK: - Autolayout
+
     private func autoLayout() {
         
         profileImageView.layer.cornerRadius = imageViewSize/2
@@ -92,4 +83,11 @@ class UserSearchCell: UICollectionViewCell {
     }
     
     // MARK: - Methods
+    
+    func configure(with model: UserTest) {
+        
+        usernameLabel.text = model.username
+        profileImageView.loadingImage(url: URL(string: model.profileImageURL)!)
+        
+    }
 }
