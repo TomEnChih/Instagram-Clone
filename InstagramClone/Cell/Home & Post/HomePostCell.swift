@@ -211,8 +211,6 @@ class HomePostCell: UICollectionViewCell {
 
         setupAttributedCaption()
         
-        
-        
     }
     
     private func setupAttributedCaption() {
@@ -226,7 +224,6 @@ class HomePostCell: UICollectionViewCell {
         attributedText.append(NSMutableAttributedString(string: post.caption, attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 14)]))
         
         attributedText.append(NSMutableAttributedString(string: "\n\n", attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 4)]))
-        
         
         let timeAgoDisplay = post.creationDate.compareCurrentTime()
         attributedText.append(NSMutableAttributedString(string: timeAgoDisplay, attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 14),NSAttributedString.Key.foregroundColor:UIColor.lightGray]))
@@ -248,6 +245,7 @@ class HomePostCell: UICollectionViewCell {
         delegate?.didTapSave(for: self)
     }
     
+    // LikeButton
     private func setLikeButtonImage(btn: UIButton,select:LikeSelect) -> UIImage{
         switch select {
         case .Like:
@@ -268,6 +266,7 @@ class HomePostCell: UICollectionViewCell {
         case Unlike = "heart"
     }
     
+    // SaveButton
     private func setBookMarkButtonImage(btn: UIButton,select:SaveSelect) -> UIImage{
         switch select {
         case .Save:

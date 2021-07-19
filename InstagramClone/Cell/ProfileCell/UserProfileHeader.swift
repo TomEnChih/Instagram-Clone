@@ -6,16 +6,12 @@
 //
 
 import UIKit
-import FirebaseAuth
-import FirebaseDatabase
 
 protocol UserProfileButtonDelegate: AnyObject {
     func didChangeToGridView()
-    func didChangeToListView()
     func didChangeToTaggedView()
     func didTapEditProfile()
 }
-
 
 class UserProfileHeader: UICollectionReusableView {
     
@@ -106,19 +102,6 @@ class UserProfileHeader: UICollectionReusableView {
         return button
     }()
     
-    let ListButton: UIButton = {
-        let button = UIButton()
-        button.clipsToBounds = true
-        
-        let config = UIImage.SymbolConfiguration(pointSize: 25, weight: .semibold)
-        let image = UIImage(systemName: "list.bullet", withConfiguration: config)
-        
-        button.tintColor = .lightGray
-        button.setImage(image, for: .normal)
-        
-        return button
-    }()
-    
     let taggedButton: UIButton = {
         let button = UIButton()
         button.clipsToBounds = true
@@ -133,7 +116,7 @@ class UserProfileHeader: UICollectionReusableView {
     }()
     
     lazy var tabStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [gridButton,ListButton,taggedButton])
+        let stackView = UIStackView(arrangedSubviews: [gridButton,taggedButton])
         stackView.axis = .horizontal
         stackView.distribution = .fillEqually
         stackView.alignment = .fill
@@ -210,7 +193,6 @@ class UserProfileHeader: UICollectionReusableView {
                 
         editProfileFollowButton.addTarget(self, action: #selector(handleEditProfileOrFollow), for: .touchUpInside)
         gridButton.addTarget(self, action: #selector(handleChangeToGridView), for: .touchUpInside)
-        ListButton.addTarget(self, action: #selector(handleChangeToListView), for: .touchUpInside)
         taggedButton.addTarget(self, action: #selector(handleChangeToTaggedView), for: .touchUpInside)
         
     }
@@ -229,7 +211,7 @@ class UserProfileHeader: UICollectionReusableView {
         followeringButton.setButtonTitle(String1: followingCount, String2: "追蹤中")
         followersButton.setButtonTitle(String1: followerCount, String2: "粉絲")
         gridButton.tintColor = isGridView ? .systemBlue: .lightGray
-        ListButton.tintColor = !isGridView ? .systemBlue: .lightGray
+        taggedButton.tintColor = !isGridView ? .systemBlue: .lightGray
         
         
         profileImageView.loadingImage(url: URL(string: model.profileImageURL)!)
@@ -241,64 +223,31 @@ class UserProfileHeader: UICollectionReusableView {
     }
     
     @objc func handleEditProfileOrFollow() {
-        guard let currentLoggedInUserEmail = Auth.auth().currentUser?.email else { return }
-        let safeCurrentEmail = currentLoggedInUserEmail.safeDatabaseKey()
+        let currentEmail = AuthManager.shared.fetchCurrentUserEmail()
         
         guard let userEmail = user?.email else { return }
         let safeUserEmail = userEmail.safeDatabaseKey()
         
-        guard safeUserEmail != safeCurrentEmail else {
+        guard safeUserEmail != currentEmail else {
             delegate?.didTapEditProfile()
             return
         }
         
         if editProfileFollowButton.titleLabel?.text == "Unfollow" {
-            //unfollowing
-            let ref = Database.database().reference().child("following").child(safeCurrentEmail).child(safeUserEmail)
-            ref.removeValue { (error, ref) in
-                if let error = error {
-                    print(error)
-                    return
-                }
-                self.setupFollowStyle()
+            
+            DatabaseManager.shared.cancelFollowerAndFollowing(currentUserEmail: currentEmail, OtherUserEmail: safeUserEmail) {
                 
-                print("successfully unfollowed user: \(self.user?.username)")
-            }
-            //unfollower (粉絲)
-            let followerRef = Database.database().reference().child("follower").child(safeUserEmail).child(safeCurrentEmail)
-            followerRef.removeValue { (error, ref) in
-                if let error = error {
-                    print(error)
-                    return
-                }
-                print("粉絲減少: \(self.user?.username)")
+                self.setupFollowStyle()
             }
             
         } else {
-            //following
-            let value = [safeUserEmail: 1]
-            let ref = Database.database().reference().child("following").child(safeCurrentEmail)
-            ref.updateChildValues(value, withCompletionBlock: { (error, ref) in
-                guard error == nil else {
-                    print("Failed to follow user:",error)
-                    return
-                }
+            
+            DatabaseManager.shared.followingOtherUserAndFollower(currentUserEmail: currentEmail, otherUserEmail: safeUserEmail) {
+                
                 self.editProfileFollowButton.setTitle("Unfollow", for: .normal)
                 self.editProfileFollowButton.backgroundColor = .white
                 self.editProfileFollowButton.setTitleColor(.black, for: .normal)
-            })
-            
-            // 關於 follower (粉絲)
-            let followerValue = [safeCurrentEmail: 1]
-            let followerRef = Database.database().reference().child("follower").child(safeUserEmail)
-            followerRef.updateChildValues(followerValue) { (error, ref) in
-                guard error == nil else {
-                    print("粉絲增加失敗：",error)
-                    return
-                }
-                print("粉絲增加")
             }
-
         }
         
     }
@@ -308,44 +257,31 @@ class UserProfileHeader: UICollectionReusableView {
         delegate?.didChangeToGridView()
     }
     
-    @objc func handleChangeToListView() {
-
-        delegate?.didChangeToListView()
-    }
-    
     @objc func handleChangeToTaggedView() {
-        taggedButton.tintColor = .systemBlue
-        ListButton.tintColor = .lightGray
-        gridButton.tintColor = .lightGray
+        
         delegate?.didChangeToTaggedView()
     }
     
     func setEditFollowButton() {
-        guard let currentLoggedInUserEmail = Auth.auth().currentUser?.email else { return }
+        let currentUserEmail = AuthManager.shared.fetchCurrentUserEmail()
         guard let userEmail = user?.email else { return }
-        let safeCurrentEmail = currentLoggedInUserEmail.safeDatabaseKey()
+        
         let safeUserEmail = userEmail.safeDatabaseKey()
         
-        if safeUserEmail == safeCurrentEmail {
+        if safeUserEmail == currentUserEmail {
             //edit Profile
         } else {
-            
             //check if following
-             let ref = Database.database().reference().child("following").child(safeCurrentEmail).child(safeUserEmail)
-            ref.observe(.value) { (snapshot) in
-                if let isFollowing = snapshot.value as? Int,isFollowing == 1 {
+            DatabaseManager.shared.fetchFollowing(currentUserEmail: currentUserEmail, followingEmail: safeUserEmail) { (following) in
+                if following {
                     self.editProfileFollowButton.setTitle("Unfollow", for: .normal)
-                    
+
                 } else {
                     self.setupFollowStyle()
-                }
-            } withCancel: { (error) in
-                    print(error)
-            }
 
-            
+                }
+            }
         }
-        
     }
     
     private func setupFollowStyle() {

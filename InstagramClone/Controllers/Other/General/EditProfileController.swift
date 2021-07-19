@@ -6,9 +6,6 @@
 //
 
 import UIKit
-import FirebaseAuth
-import FirebaseDatabase
-import FirebaseStorage
 
 struct EditProfileModel {
     let label: String
@@ -93,56 +90,44 @@ class EditProfileController: UIViewController {
     }
     
     
-    func saveAction() {
+    private func saveAction() {
         
         if isChangeProfileImage {
             guard let uploadData = selectedImage.jpegData(compressionQuality: 0.5) else { return }
             
             navigationItem.rightBarButtonItem?.isEnabled = false
             
-            let fileName = UUID().uuidString
-            let ref = Storage.storage().reference().child("posts").child(fileName)
-            ref.putData(uploadData, metadata: nil) { (metaData, error) in
-                
-                guard error == nil else {
+            StorageManager.shared.uploadUserProfileImage(with: uploadData) { (result) in
+                switch result {
+                case .failure(let error):
                     self.navigationItem.rightBarButtonItem?.isEnabled = true
                     print(error)
-                    return
-                }
-                
-                ref.downloadURL(completion: { (url, error) in
-                    guard let downloadURL = url else { return }
-                    let downloadURLString = downloadURL.absoluteString
                     
-                    self.saveToDatabaseWithImageURL(imageURL: downloadURLString)
-                })
+                case .success(let downloadURLString):
+                    self.saveToDatabase(imageURL: downloadURLString)
+                }
             }
+            
         } else {
-            self.saveToDatabaseWithImageURL(imageURL: user.profileImageURL)
+            self.saveToDatabase(imageURL: user.profileImageURL)
         }
         
     }
     
-    private func saveToDatabaseWithImageURL(imageURL: String) {
-        
-        guard let email = Auth.auth().currentUser?.email else { return }
-        let safeEmail = email.safeDatabaseKey()
-        
-        let value = ["profileImageURL": imageURL,
-                     "username": user.username,
-                     "name": user.name ?? "",
-                     "bio": user.bio ?? ""] as [String:Any]
-        let ref = Database.database().reference().child("user").child(safeEmail)
-        ref.updateChildValues(value) { (error, ref) in
-            if let error = error {
-                self.navigationItem.rightBarButtonItem?.isEnabled = true
-                print(error)
-                return
-            }
+    private func saveToDatabase(imageURL: String) {
+                
+        DatabaseManager.shared.uplaodUserProfile(imageURL: imageURL, username: user.username, name: user.name, bio: user.bio) { (success) in
             
-            NotificationCenter.default.post(name: EditProfileController.editProfileNotificationName, object: nil)
-            self.dismiss(animated: true, completion: nil)
+            if success {
+                NotificationCenter.default.post(name: EditProfileController.editProfileNotificationName, object: nil)
+                self.dismiss(animated: true, completion: nil)
+                
+            } else {
+                self.navigationItem.rightBarButtonItem?.isEnabled = true
+
+            }
         }
+        
     }
     
     
@@ -171,14 +156,12 @@ extension EditProfileController: UITableViewDelegate,UITableViewDataSource {
         let headerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: EditProfileHeaderView.id) as! EditProfileHeaderView
         
         headerView.delegate = self
-        headerView.contentView.backgroundColor = .white
         
         if isChangeProfileImage {
             headerView.profilePhotoButton.setImage(selectedImage, for: .normal)
         } else {
             headerView.profilePhotoButton.loadingImage(url: URL(string: user.profileImageURL)!)
         }
-        
         
         return headerView
     }

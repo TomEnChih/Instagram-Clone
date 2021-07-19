@@ -36,21 +36,10 @@ class LoginController: UIViewController {
             self.loginView.passswordField.resignFirstResponder()
             self.loginView.usernameEmailField.resignFirstResponder()
             
-            guard let usernameEmail = self.loginView.usernameEmailField.text,!usernameEmail.isEmpty,
+            guard let email = self.loginView.usernameEmailField.text,!email.isEmpty,
                   let password = self.loginView.passswordField.text,!password.isEmpty,password.count >= 8 else { return }
             
-            var email: String?
-            var username: String?
-            
-            if usernameEmail.contains("@"),usernameEmail.contains(".") {
-                //email
-                email = usernameEmail
-            } else {
-                // username
-                username = usernameEmail
-            }
-            
-            AuthManager.shared.loginUser(username: username, email: email, password: password) { (success) in
+            AuthManager.shared.loginUser(email: email, password: password) { (success) in
                 DispatchQueue.main.async {
                     if success {
                         // user logged in

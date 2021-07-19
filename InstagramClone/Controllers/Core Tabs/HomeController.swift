@@ -7,7 +7,6 @@
 
 import UIKit
 import FirebaseAuth
-import FirebaseDatabase
 
 class HomeController: UIViewController {
     
@@ -35,7 +34,6 @@ class HomeController: UIViewController {
         setupNavigationItems()
         setupRefreshControl()
         fetchPosts()
-//        fetchFollowingUserEmail()
         
         NotificationCenter.default.addObserver(self, selector: #selector(handleUpdateFeed), name: SharePhotoController.updateFeedNotificationName , object: nil)
     }
@@ -64,69 +62,87 @@ class HomeController: UIViewController {
             present(loginVC, animated: false, completion: nil)
         }
     }
-    
+    /// 有追蹤的條件下，才會顯示
     private func fetchPosts() {
-        guard let email = Auth.auth().currentUser?.email else { return }
-        
-        Database.fetchUserWithEmail(with: email) { user in
-            
+        let email = AuthManager.shared.fetchCurrentUserEmail()
+        DatabaseManager.shared.fetchUserWithEmail(with: email) { (user) in
             self.fetchPostsWithUser(with: user)
-            self.fetchFollowingUserEmail()
+            self.fetchFollowingUserEmail(email: email)
         }
     }
     
+    private func fetchFollowingUserEmail(email: String) {
+        
+        DatabaseManager.shared.fetchFollowingEmail(userEmail: email) { (email) in
+            DatabaseManager.shared.fetchUserWithEmail(with: email) { (user) in
+                self.fetchPostsWithUser(with: user)
+            }
+        }
+    }
+    
+    //    private func fetchPostsWithUser1(with user: UserTest) {
+    //
+    //        let safeEmail = user.email.safeDatabaseKey()
+    //
+    //        let ref = Database.database().reference().child("posts").child(safeEmail)
+    //
+    //        ref.observeSingleEvent(of: .value) { (snapshot) in
+    //
+    //            self.refreshControl.endRefreshing()
+    //
+    //            guard let dictionaries = snapshot.value as? [String:Any] else { return }
+    //
+    //            dictionaries.forEach { (key, value) in
+    //                guard let dictionary = value as? [String:Any] else { return }
+    //
+    ////                var post = PostTest(user: user, dictionary: dictionary)
+    //                let post = Observable<PostTest>(PostTest(user: user, dictionary: dictionary))
+    //                post.value?.id = key ///用於 comment
+    //
+    //                guard let email = Auth.auth().currentUser?.email else { return }
+    //                let safeUserEmail = email.safeDatabaseKey()
+    //
+    //                Database.database().reference().child("likes").child(key).child(safeUserEmail).observeSingleEvent(of: .value) { (snapshot) in
+    //                    if let value = snapshot.value as? Int,value == 1 {
+    //                        post.value?.hasLiked = true
+    //                    } else {
+    //                        post.value?.hasLiked = false
+    //                    }
+    //                    print(post.value?.id,snapshot.value,post.value?.hasLiked)
+    //                }
+    //
+    //                self.posts.append(post)
+    //            }
+    //            self.posts.sort { (p1, p2) -> Bool in
+    //                return p1.value!.creationDate.compare(p2.value!.creationDate) == .orderedDescending
+    //            }
+    //            self.homeView.homeCollectionView.reloadData()
+    //        }
+    //    }
+    
+    
     private func fetchPostsWithUser(with user: UserTest) {
         
-        let safeEmail = user.email.safeDatabaseKey()
-        
-        let ref = Database.database().reference().child("posts").child(safeEmail)
-        
-        ref.observeSingleEvent(of: .value) { (snapshot) in
+        DatabaseManager.shared.fetchPostsWithEmail(with: user.email) { (id, dictionary) in
             
             self.refreshControl.endRefreshing()
             
-            guard let dictionaries = snapshot.value as? [String:Any] else { return }
+            let post = Observable<PostTest>(PostTest(user: user, dictionary: dictionary))
+            post.value?.id = id ///用於 comment
             
-            dictionaries.forEach { (key, value) in
-                guard let dictionary = value as? [String:Any] else { return }
-                
-//                var post = PostTest(user: user, dictionary: dictionary)
-                let post = Observable<PostTest>(PostTest(user: user, dictionary: dictionary))
-                post.value?.id = key ///用於 comment
-                
-                guard let email = Auth.auth().currentUser?.email else { return }
-                let safeUserEmail = email.safeDatabaseKey()
-                
-                Database.database().reference().child("likes").child(key).child(safeUserEmail).observeSingleEvent(of: .value) { (snapshot) in
-                    if let value = snapshot.value as? Int,value == 1 {
-                        post.value?.hasLiked = true
-                    } else {
-                        post.value?.hasLiked = false
-                    }
-                    print(post.value?.id,snapshot.value,post.value?.hasLiked)
-                }
-                
-                self.posts.append(post)
+            DatabaseManager.shared.fetchPostLike(postId: id) { (hasLiked) in
+                post.value?.hasLiked = hasLiked
             }
+            DatabaseManager.shared.fetchPostSave(postId: id) { (hasSaved) in
+                post.value?.hasSaved = hasSaved
+            }
+            
+            self.posts.append(post)
             self.posts.sort { (p1, p2) -> Bool in
                 return p1.value!.creationDate.compare(p2.value!.creationDate) == .orderedDescending
             }
             self.homeView.homeCollectionView.reloadData()
-        }
-    }
-    
-    private func fetchFollowingUserEmail() {
-        guard let email = Auth.auth().currentUser?.email else { return }
-        let safeEmail = email.safeDatabaseKey()
-        
-        Database.database().reference().child("following").child(safeEmail).observeSingleEvent(of: .value) { (snapshot) in
-            guard let userEmailDictionary = snapshot.value as? [String:Any] else { return }
             
-            userEmailDictionary.forEach { (key,value) in
-                Database.fetchUserWithEmail(with: key) { (user) in
-                    self.fetchPostsWithUser(with: user)
-                }
-            }
         }
     }
     
@@ -177,25 +193,16 @@ extension HomeController: HomePostButtonDelegate {
     
     func didTapLike(for cell: HomePostCell) {
         guard let indexPath = homeView.homeCollectionView.indexPath(for: cell) else { return }
-        
         let post = posts[indexPath.item]
         
         guard let postId = post.value?.id else { return }
-        guard let email = Auth.auth().currentUser?.email else { return }
-        let safeEmail = email.safeDatabaseKey()
-        let values = [safeEmail: post.value?.hasLiked == true ? 0 : 1]
+        guard let hasLiked =  post.value?.hasLiked else { return }
         
-        Database.database().reference().child("likes").child(postId).updateChildValues(values) { (error, ref) in
-            if let error = error {
-                print("Failed to like post:",error)
-                return
-            }
-            print("Successfully liked post.")
-            post.value?.hasLiked = !post.value!.hasLiked ///post 跟 posts 無關，需要把他帶換掉 posts[indexPath.item]
-            self.posts[indexPath.item] = post
+        DatabaseManager.shared.uploadPostLike(postId: postId, hasLiked: hasLiked) { change in
+            post.value?.hasLiked = change ///post 跟 posts 無關，需要把他帶換掉 posts[indexPath.item]
+//            self.posts[indexPath.item] = post
 //            self.homeView.homeCollectionView.reloadItems(at: [indexPath])
         }
-
     }
     
     func didTapComment(post: PostTest) {
@@ -206,23 +213,13 @@ extension HomeController: HomePostButtonDelegate {
     
     func didTapSave(for cell: HomePostCell) {
         guard let indexPath = homeView.homeCollectionView.indexPath(for: cell) else { return }
-        
         let post = posts[indexPath.item]
         
         guard let postId = post.value?.id else { return }
-        guard let email = Auth.auth().currentUser?.email else { return }
-        let safeEmail = email.safeDatabaseKey()
-        let values = [safeEmail: post.value?.hasSaved == true ? 0 : 1]
+        guard let hasSaved =  post.value?.hasSaved else { return }
         
-        Database.database().reference().child("save").child(postId).updateChildValues(values) { (error, ref) in
-            if let error = error {
-                print("Failed to save post:",error)
-                return
-            }
-            print("Successfully saved post.")
-            post.value?.hasSaved = !post.value!.hasSaved
-            self.posts[indexPath.item] = post
-//            self.homeView.homeCollectionView.reloadItems(at: [indexPath])
+        DatabaseManager.shared.uploadPostSave(postId: postId, hasSaved: hasSaved) { (change) in
+            post.value?.hasSaved = change
         }
     }
     

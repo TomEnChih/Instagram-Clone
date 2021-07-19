@@ -6,8 +6,6 @@
 //
 
 import UIKit
-import FirebaseDatabase
-import FirebaseAuth
 
 class UserSearchController: UIViewController {
     
@@ -72,28 +70,17 @@ class UserSearchController: UIViewController {
     // MARK: - Methods
     
     private func fetchUser() {
-         
-        let ref = Database.database().reference().child("user")
-        
-        ref.observeSingleEvent(of: .value) { (snapshot) in
+        DatabaseManager.shared.fetchUserWithoutOneself { (email, dictionary) in
             
-            guard let dictionaries = snapshot.value as? [String:Any] else { return }
-            
-            dictionaries.forEach { (key,value) in
-                
-                if key == Auth.auth().currentUser?.email?.safeDatabaseKey() {
-                    return /// 搜尋不包含自己
-                }
-                
-                guard let userDictionary = value as? [String:Any] else { return }
-                let user = Observable<UserTest>(UserTest(email: key, dictionary: userDictionary))
-                self.users.append(user)
-            }
+            let user = Observable<UserTest>(UserTest(email: email, dictionary: dictionary))
+            self.users.append(user)
             
             self.users.sort { (u1, u2) -> Bool in
                 return u1.value?.username.compare(u2.value!.username) == .orderedAscending
             }
+            
             self.filteredUsers = self.users
+            /// 還是要加
             self.userSearchView.userSearchCollectionView.reloadData()
         }
     }
@@ -146,7 +133,7 @@ extension UserSearchController: UISearchBarDelegate {
                 return (user.value?.username.lowercased().contains(searchText.lowercased()))!
             }
         }
-        
+        /// 還是要加...
         userSearchView.userSearchCollectionView.reloadData()
     }
     

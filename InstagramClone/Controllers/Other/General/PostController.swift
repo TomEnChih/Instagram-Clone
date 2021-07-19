@@ -6,8 +6,6 @@
 //
 
 import UIKit
-import FirebaseAuth
-import FirebaseDatabase
 
 class PostController: UIViewController {
     
@@ -36,12 +34,20 @@ class PostController: UIViewController {
         
         postView.homeCollectionView.delegate = self
         postView.homeCollectionView.dataSource = self
+        fetchPostLikeAndSave()
     }
     
 
     // MARK: - Methods
     
-    
+    private func fetchPostLikeAndSave() {
+        DatabaseManager.shared.fetchPostLike(postId: post.value!.id!) { (hasLiked) in
+            self.post.value?.hasLiked = hasLiked
+        }
+        DatabaseManager.shared.fetchPostSave(postId: post.value!.id!) { (hasSaved) in
+            self.post.value?.hasSaved = hasSaved
+        }
+    }
 }
 
 //MARK: - UICollectionViewDataSource,UICollectionViewDelegateFlowLayout
@@ -78,36 +84,30 @@ extension PostController: UICollectionViewDataSource,UICollectionViewDelegateFlo
 extension PostController: HomePostButtonDelegate {
     
     func didTapLike(for cell: HomePostCell) {
-        guard let indexPath = postView.homeCollectionView.indexPath(for: cell) else { return }
-                
-        guard let postId = post.value?.id else { return }
-        guard let email = Auth.auth().currentUser?.email else { return }
-        let safeEmail = email.safeDatabaseKey()
-        let values = [safeEmail: post.value?.hasLiked == true ? 0 : 1]
         
-        Database.database().reference().child("likes").child(postId).updateChildValues(values) { (error, ref) in
-            if let error = error {
-                print("Failed to like post:",error)
-                return
-            }
-            print("Successfully liked post.")
-            self.post.value?.hasLiked = !self.post.value!.hasLiked ///post 跟 posts 無關，需要把他帶換掉 posts[indexPath.item]
-//            self.postView.homeCollectionView.reloadItems(at: [indexPath])
+        guard let postId = post.value?.id else { return }
+        guard let hasLiked =  post.value?.hasLiked else { return }
+        
+        DatabaseManager.shared.uploadPostLike(postId: postId, hasLiked: hasLiked) { change in
+            self.post.value?.hasLiked = change
         }
-
     }
     
     func didTapComment(post: PostTest) {
-        print(post.caption)
         let vc = PostCommentController(post: post)
         vc.modalPresentationStyle = .fullScreen
         navigationController?.pushViewController(vc, animated: true)
     }
     
     func didTapSave(for cell: HomePostCell) {
-        print("Save...")
+        
+        guard let postId = post.value?.id else { return }
+        guard let hasSaved =  post.value?.hasSaved else { return }
+        
+        DatabaseManager.shared.uploadPostSave(postId: postId, hasSaved: hasSaved) { (change) in
+            self.post.value?.hasSaved = change
+        }
     }
     
     
 }
-

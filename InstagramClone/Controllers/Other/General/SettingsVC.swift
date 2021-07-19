@@ -34,18 +34,6 @@ class SettingsVC: UIViewController {
     // MARK: - Methods
     ///一個參數 title 為 Log Out, 帶有 handle
     private func configureModels() {
-        data.append([
-            SettingCellModel(title: "Edit Profile") { [weak self] in
-                
-            },
-            SettingCellModel(title: "Invite Friends") { [weak self] in
-                self?.didtapInviteFriends()
-            },
-            SettingCellModel(title: "Save original Posts") { [weak self] in
-                self?.didTapSaveOriginalPosts()
-            }
-        ])
-        
         
         data.append([
             SettingCellModel(title: "Terms of Service") { [weak self] in
@@ -87,15 +75,6 @@ class SettingsVC: UIViewController {
         present(vc, animated: true, completion: nil)
     }
     
-    private func didtapInviteFriends() {
-        // Show share sheet to invite friends
-    }
-    
-    private func didTapSaveOriginalPosts() {
-        
-    }
-    
-    
     private func didTapLogOut() {
         let actionSheet = UIAlertController(title: "Log Out", message: "Are you sure you want to log out?", preferredStyle: .actionSheet)
         actionSheet.addAction(UIAlertAction(title: "取消", style: .cancel, handler: nil))
@@ -107,7 +86,7 @@ class SettingsVC: UIViewController {
                         let loginVC = LoginController()
                         loginVC.modalPresentationStyle = .fullScreen
                         self.present(loginVC, animated: true) {
-                            /// 不然 ProfileVC 會停在 SettingsVC
+                            /// 不然 UserProfileController 會停在 SettingsController
                             self.navigationController?.popViewController(animated: false)
                             self.tabBarController?.selectedIndex = 0
                         }
@@ -118,8 +97,8 @@ class SettingsVC: UIViewController {
                 }
             }
         }))
-        actionSheet.popoverPresentationController?.sourceView = settingsView.settingsTableVeiw
-        actionSheet.popoverPresentationController?.sourceRect = settingsView.bounds
+//        actionSheet.popoverPresentationController?.sourceView = settingsView.settingsTableVeiw
+//        actionSheet.popoverPresentationController?.sourceRect = settingsView.bounds
         present(actionSheet, animated: true, completion: nil)
         
     }
@@ -139,6 +118,7 @@ extension SettingsVC: UITableViewDelegate,UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "settingsTableVeiwCell", for: indexPath)
+        
         cell.textLabel?.text = data[indexPath.section][indexPath.row].title
         
         return cell

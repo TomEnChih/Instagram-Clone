@@ -30,8 +30,6 @@ class NotificationLikeEventTableViewCell: UITableViewCell {
         let imageView = CustomImageView()
         imageView.layer.masksToBounds = true
         imageView.contentMode = .scaleAspectFit
-//        imageView.layer.borderWidth = 1
-//        imageView.layer.borderColor = UIColor.lightGray.cgColor
         return imageView
     }()
     

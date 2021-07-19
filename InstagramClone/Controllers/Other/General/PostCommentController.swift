@@ -6,8 +6,6 @@
 //
 
 import UIKit
-import FirebaseAuth
-import FirebaseDatabase
 
 class PostCommentController: UIViewController {
     
@@ -29,11 +27,11 @@ class PostCommentController: UIViewController {
         self.post = post
         super.init(nibName: nil, bundle: nil)
     }
-
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
+    
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
@@ -57,7 +55,7 @@ class PostCommentController: UIViewController {
         super.viewWillDisappear(animated)
         tabBarController?.tabBar.isHidden = false
     }
-
+    
     // MARK: - Methods
     
     override var inputAccessoryView: UIView? {
@@ -74,43 +72,27 @@ class PostCommentController: UIViewController {
     
     private func fetchComments() {
         guard let postId = post.id else { return }
-        let ref = Database.database().reference().child("comments").child(postId)
-        ref.observe(.childAdded) { (snapshot) in
-            guard let dictionary = snapshot.value as? [String:Any] else { return }
-            guard let email = dictionary["email"] as? String else { return }
-            Database.fetchUserWithEmail(with: email) { (user) in
-                let comment = Observable<Comment>(Comment(user: user, dictionary: dictionary))
-                self.comments.append(comment)
-                self.postCommentView.commentTableView.reloadData()
-            }
+        
+        DatabaseManager.shared.fetchPostComments(postId: postId) { (user, dictionary) in
+            let comment = Observable<Comment>(Comment(user: user, dictionary: dictionary))
+            self.comments.append(comment)
+            self.postCommentView.commentTableView.reloadData()
         }
     }
     
     private func buttonActionFunction() {
         
         postCommentBottomView.didTapSendButton = {
-            guard let email = Auth.auth().currentUser?.email else { return }
-            let safeEmail = email.safeDatabaseKey()
+
             guard let postId = self.post.id else { return }
-            
-            let values = ["text": self.postCommentBottomView.commentTextView.text ?? "error",
-                          "creationDate": Date().timeIntervalSince1970,
-                          "email" : safeEmail]
-                as [String : Any]
-            
-            Database.database().reference().child("comments").child(postId).childByAutoId().updateChildValues(values) { (error, ref) in
-                if let error = error {
-                    print("Failed to insert comment:", error)
-                    return
-                }
-                print("Successfully inserted comment.")
+            guard let text = self.postCommentBottomView.commentTextView.text,text.count > 0 else { return }
+            DatabaseManager.shared.uploadPostComment(postId: postId, text: text) {
                 self.postCommentBottomView.commentTextView.returnCommentText()
             }
         }
-        
     }
     
-
+    
 }
 
 //MARK: - TableViewDelegate,TableViewDataSource
@@ -125,7 +107,6 @@ extension PostCommentController: UITableViewDelegate,UITableViewDataSource {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: CommentCell.id, for: indexPath) as! CommentCell
         
-//        cell.configure(with: comment)
         let comment = comments[indexPath.row]
         
         comment.bind { (comment) in

@@ -6,8 +6,6 @@
 //
 
 import UIKit
-import FirebaseAuth
-import FirebaseDatabase
 
 class UserProfileController: UIViewController {
     
@@ -15,7 +13,9 @@ class UserProfileController: UIViewController {
     
     private let userProfileView = UserProfileView()
     
+    private var allPosts = [Observable<PostTest>]()
     private var posts = [Observable<PostTest>]()
+    private var savePosts = [Observable<PostTest>]()
     
     private var user: Observable<UserTest>?
     
@@ -23,13 +23,13 @@ class UserProfileController: UIViewController {
     
     var isGridView = true
     
-    var following = "" {
+    var following = [String]() {
         didSet {
             self.userProfileView.prfileCollectionView.reloadData()
         }
     }
     
-    var follower = "" {
+    var follower = [String]() {
         didSet {
             self.userProfileView.prfileCollectionView.reloadData()
         }
@@ -48,10 +48,12 @@ class UserProfileController: UIViewController {
     
     // MARK: - Methods
     func setupNavigationButtons() {
-        navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "gear"),
-                                                            style: .done,
-                                                            target: self,
-                                                            action: #selector(didTapSettingsButton))
+        let button = UIBarButtonItem(image: UIImage(systemName: "gear"),
+                                     style: .done,
+                                     target: self,
+                                     action: #selector(didTapSettingsButton))
+        button.tintColor = .black
+        navigationItem.rightBarButtonItem = button
     }
     
     @objc private func didTapSettingsButton() {
@@ -60,81 +62,106 @@ class UserProfileController: UIViewController {
         navigationController?.pushViewController(vc, animated: true)
     }
     
-    func fetchFollower(){
+    func fetchFollowerAndFollowing(){
         guard let email = self.user?.value?.email else { return }
-        let safeEmail = email.safeDatabaseKey()
         
-        let ref = Database.database().reference().child("follower").child(safeEmail)
-        ref.observe(.value) { (snapshot) in
-            
-            self.follower = String(snapshot.childrenCount)
-        }
-    }
-    
-    func fetchFollowing(){
-        guard let email = self.user?.value?.email else { return }
-        let safeEmail = email.safeDatabaseKey()
-                
-        let ref = Database.database().reference().child("following").child(safeEmail)
-        ref.observe(.value) { (snapshot) in
-            
-            self.following = String(snapshot.childrenCount)
+        DatabaseManager.shared.fetchFollowerEmail(userEmail: email) { (email) in
+            self.follower.append(email)
         }
         
+        DatabaseManager.shared.fetchFollowingEmail(userEmail: email) { (followingEmail) in
+            self.following.append(followingEmail)
+            
+            DatabaseManager.shared.fetchUserWithEmail(with: followingEmail) { (user) in
+                self.fetchSavePostsWithUser(with: user)
+            }
+        }
     }
     
     @objc func updateUser() {
-        guard let email = Auth.auth().currentUser?.email else { return }
-        let safeEmail = email.safeDatabaseKey()
-        
-        Database.fetchUserWithEmail(with: safeEmail) { (user) in
-            
+        let email = AuthManager.shared.fetchCurrentUserEmail()
+
+        DatabaseManager.shared.fetchUserWithEmail(with: email) { (user) in
             self.user = Observable<UserTest>(user)
             self.navigationItem.title = user.username
+            /// 要加
             self.userProfileView.prfileCollectionView.reloadData()
         }
-        
     }
+
     
-    #warning("database之後要整理")
-    func fetchUser() {
+    private func fetchUser() {
+        let email = userEmail ?? AuthManager.shared.fetchCurrentUserEmail()
         
-        let email = userEmail ?? (Auth.auth().currentUser?.email ?? "")
-        
-        //        guard let email = Auth.auth().currentUser?.email else {
-        //            return
-        //        }
-        
-        Database.fetchUserWithEmail(with: email) { (user) in
-            
+        DatabaseManager.shared.fetchUserWithEmail(with: email) { (user) in
             self.user = Observable<UserTest>(user)
             self.navigationItem.title = user.username
             
-            self.fetchOrderedPosts()
-            self.fetchFollowing()
-            self.fetchFollower()
+            self.fetchFollowerAndFollowing()
+            self.fetchPostsWithUser(with: user)
         }
     }
     
-    func fetchOrderedPosts() {
+    private func fetchPostsWithUser(with user: UserTest) {
         
-        guard let email = self.user?.value?.email else { return }
-        let safeEmail = email.safeDatabaseKey()
-        
-        let ref = Database.database().reference().child("posts").child(safeEmail)
-        ref.queryOrdered(byChild: "creationDate").observe(.childAdded) { (snapshot) in
-            
-            guard let dictionary = snapshot.value as? [String:Any] else { return }
-            
-            guard let user = self.user?.value else { return }
+        DatabaseManager.shared.fetchPostsWithEmail(with: user.email) { (id, dictionary) in
+                        
             let post = Observable<PostTest>(PostTest(user: user, dictionary: dictionary))
-            self.posts.insert(post, at: 0)
+            post.value?.id = id ///用於 comment
+            
+            DatabaseManager.shared.fetchPostLike(postId: id) { (hasLiked) in
+                post.value?.hasLiked = hasLiked
+            }
+            DatabaseManager.shared.fetchPostSave(postId: id) { (hasSaved) in
+                post.value?.hasSaved = hasSaved
+            }
+            
+            self.posts.append(post)
+            self.posts.sort { (p1, p2) -> Bool in
+                return p1.value!.creationDate.compare(p2.value!.creationDate) == .orderedDescending
+            }
+            
+            self.allPosts.append(post)
+            self.allPosts.sort { (p1, p2) -> Bool in
+                return p1.value!.creationDate.compare(p2.value!.creationDate) == .orderedDescending
+            }
+            self.deletePostNoSave()
             self.userProfileView.prfileCollectionView.reloadData()
         }
     }
     
-    func fetchSavedPosts() {
+    private func fetchSavePostsWithUser(with user: UserTest) {
         
+        DatabaseManager.shared.fetchPostsWithEmail(with: user.email) { (id, dictionary) in
+                        
+            let post = Observable<PostTest>(PostTest(user: user, dictionary: dictionary))
+            post.value?.id = id ///用於 comment
+            
+            DatabaseManager.shared.fetchPostLike(postId: id) { (hasLiked) in
+                post.value?.hasLiked = hasLiked
+            }
+            DatabaseManager.shared.fetchPostSave(postId: id) { (hasSaved) in
+                post.value?.hasSaved = hasSaved
+            }
+            
+            self.allPosts.append(post)
+            self.allPosts.sort { (p1, p2) -> Bool in
+                return p1.value!.creationDate.compare(p2.value!.creationDate) == .orderedDescending
+            }
+            self.deletePostNoSave()
+            self.userProfileView.prfileCollectionView.reloadData()
+        }
+    }
+    
+    private func deletePostNoSave(){
+        allPosts.forEach { (post) in
+            if post.value?.hasSaved == true {
+                savePosts.append(post)
+                savePosts.sort { (p1, p2) -> Bool in
+                    return p1.value!.creationDate.compare(p2.value!.creationDate) == .orderedDescending
+                }
+            }
+        }
     }
     
 }
@@ -143,8 +170,11 @@ class UserProfileController: UIViewController {
 extension UserProfileController: UICollectionViewDelegateFlowLayout, UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        
-        return posts.count
+        if isGridView {
+            return posts.count
+        } else {
+            return savePosts.count
+        }
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -158,9 +188,9 @@ extension UserProfileController: UICollectionViewDelegateFlowLayout, UICollectio
             
             return cell
         } else {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: HomePostCell.id, for: indexPath) as! HomePostCell
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: UserProfilePhotoCell.id, for: indexPath) as! UserProfilePhotoCell
             
-            posts[indexPath.item].bind { (post) in
+            savePosts[indexPath.item].bind { (post) in
                 cell.configure(with: post!)
             }
             
@@ -170,21 +200,22 @@ extension UserProfileController: UICollectionViewDelegateFlowLayout, UICollectio
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         
-        if isGridView {
             let articleCellSize = (userProfileView.prfileCollectionView.frame.width - 4)/3
             
             return CGSize(width: articleCellSize, height: articleCellSize)
-        } else {
-            var height:CGFloat = 110
-            height += view.frame.width
-            height += 120
-            
-            return CGSize(width: view.frame.width, height: height)
-        }
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let vc = ProfileListController(posts: posts, index: indexPath)
+        
+        var testPost = [Observable<PostTest>]()
+        
+        if isGridView {
+            testPost = posts
+        } else {
+            testPost = savePosts
+        }
+        
+        let vc = ProfileListController(posts: testPost, index: indexPath)
         vc.modalPresentationStyle = .formSheet
         navigationController?.pushViewController(vc, animated: true)
     }
@@ -199,7 +230,7 @@ extension UserProfileController: UICollectionViewDelegateFlowLayout, UICollectio
         let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: UserProfileHeader.id, for: indexPath) as! UserProfileHeader
         
         user?.bind({ (user) in
-            header.configure(with: user!, postCount: String(self.posts.count), followerCount: self.follower, followingCount: self.following, isGridView: self.isGridView)
+            header.configure(with: user!, postCount: String(self.posts.count), followerCount: String(self.follower.count), followingCount: String(self.following.count), isGridView: self.isGridView)
         })
         
         header.delegate = self
@@ -222,6 +253,7 @@ extension UserProfileController: UICollectionViewDelegateFlowLayout, UICollectio
     
 }
 
+//MARK: - UserProfileButtonDelegate
 extension UserProfileController: UserProfileButtonDelegate {
     
     func didChangeToGridView() {
@@ -229,14 +261,9 @@ extension UserProfileController: UserProfileButtonDelegate {
         userProfileView.prfileCollectionView.reloadData()
     }
     
-    func didChangeToListView() {
+    func didChangeToTaggedView() {
         isGridView = false
         userProfileView.prfileCollectionView.reloadData()
-        
-    }
-    
-    func didChangeToTaggedView() {
-        
     }
     
     func didTapEditProfile() {

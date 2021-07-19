@@ -44,6 +44,7 @@ class EditProfileHeaderView: UITableViewHeaderFooterView {
     
     override init(reuseIdentifier: String?) {
         super.init(reuseIdentifier: reuseIdentifier)
+        contentView.backgroundColor = .white
         backgroundColor = .white
         addSubview(profilePhotoButton)
         autoLayout()

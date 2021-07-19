@@ -6,8 +6,8 @@
 //
 
 import UIKit
-import FirebaseAuth
-import FirebaseDatabase
+//import FirebaseAuth
+//import FirebaseDatabase
 
 enum UserNotificationType {
     case like(post: PostTest)
@@ -45,68 +45,77 @@ class NotificationsController: UIViewController {
     // MARK: - Methods
     
     private func fetchUser() {
-        guard let email = Auth.auth().currentUser?.email else { return }
+        let email = AuthManager.shared.fetchCurrentUserEmail()
         
-        Database.fetchUserWithEmail(with: email) { user in
-            
+        DatabaseManager.shared.fetchUserWithEmail(with: email) { (user) in
             self.fetchLikePosts(with: user)
-            self.fetchFollowers()
+            self.fetchFollowers(with: email)
         }
     }
+    
+    //    func fetchLikePosts(with user: UserTest) {
+    //        let currentUserEmail = AuthManager.shared.fetchCurrentUserEmail()
+    //
+    //        let postRef = Database.database().reference().child("posts").child(currentUserEmail)
+    //        postRef.observeSingleEvent(of: .value) { (snapshot) in
+    //            guard let dictionaries = snapshot.value as? [String:Any] else { return }
+    //
+    //            dictionaries.forEach { (key, value) in
+    //                guard let dictionary = value as? [String:Any] else { return }
+    //                var post = PostTest(user: user, dictionary: dictionary) //自己的post
+    //                post.id = key /// comment 編號
+    //                let likeRef = Database.database().reference().child("likes").child(key)
+    //                likeRef.observeSingleEvent(of: .value) { (snapshot) in
+    //                    guard let likeDictionary = snapshot.value as? [String:Any] else { return }
+    //
+    //                    likeDictionary.forEach { (key,value) in
+    //                        guard key != currentUserEmail else { return }
+    //                        Database.fetchUserWithEmail(with: key) { (user) in
+    //                            let model = Observable<UserNotification>(UserNotification(type: .like(post: post), user: user))
+    //                            self.models.append(model)
+    //                            self.handleViewDisplay()
+    //                            self.notificationsView.notificationsTableView.reloadData()
+    //                        }
+    //                    }
+    //                }
+    //            }
+    //        }
+    //    }
     
     func fetchLikePosts(with user: UserTest) {
-        guard let email = Auth.auth().currentUser?.email else { return }
-        let safeEmail = email.safeDatabaseKey()
+        let currentUserEmail = user.email
         
-        let postRef = Database.database().reference().child("posts").child(safeEmail)
-        postRef.observeSingleEvent(of: .value) { (snapshot) in
-            guard let dictionaries = snapshot.value as? [String:Any] else { return }
+        DatabaseManager.shared.fetchPostsWithEmail(with: currentUserEmail) { (id, dictionary) in
+            var post = PostTest(user: user, dictionary: dictionary) //自己的post
+            post.id = id /// comment 編號
             
-            dictionaries.forEach { (key, value) in
-                guard let dictionary = value as? [String:Any] else { return }
-                var post = PostTest(user: user, dictionary: dictionary) //自己的post
-                post.id = key /// comment 編號
-                let likeRef = Database.database().reference().child("likes").child(key)
-                likeRef.observeSingleEvent(of: .value) { (snapshot) in
-                    guard let likeDictionary = snapshot.value as? [String:Any] else { return }
-                    
-                    likeDictionary.forEach { (key,value) in
-                        //                        print(post.caption,snapshot.key,key)
-                        guard key != safeEmail else { return }
-                        Database.fetchUserWithEmail(with: key) { (user) in
-                            let model = Observable<UserNotification>(UserNotification(type: .like(post: post), user: user))
-                            self.models.append(model)
-                            self.handleView()
-                            self.notificationsView.notificationsTableView.reloadData()
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
-    func fetchFollowers() {
-        guard let email = Auth.auth().currentUser?.email else { return }
-        let safeEmail = email.safeDatabaseKey()
-        
-        let followerRef = Database.database().reference().child("follower").child(safeEmail)
-        followerRef.observeSingleEvent(of: .value) { (snapshot) in
-            guard let dictionary = snapshot.value as? [String: Any] else { return }
-            
-            dictionary.forEach { (key,value) in
+            DatabaseManager.shared.fetchPostLikeAllUser(postId: id) { (email) in
+                guard email != currentUserEmail else { return }
                 
-                Database.fetchUserWithEmail(with: key) { (user) in
-                    let model = Observable<UserNotification>(UserNotification(type: .follow, user: user))
+                DatabaseManager.shared.fetchUserWithEmail(with: email) { (user) in
+                    let model = Observable<UserNotification>(UserNotification(type: .like(post: post), user: user))
                     self.models.append(model)
-                    self.handleView()
+                    self.handleViewDisplay()
                     self.notificationsView.notificationsTableView.reloadData()
                 }
             }
         }
     }
     
+    func fetchFollowers(with email: String) {
+        
+        DatabaseManager.shared.fetchFollowerEmail(userEmail: email) { (email) in
+            DatabaseManager.shared.fetchUserWithEmail(with: email) { (user) in
+                let model = Observable<UserNotification>(UserNotification(type: .follow, user: user))
+                self.models.append(model)
+                self.handleViewDisplay()
+                self.notificationsView.notificationsTableView.reloadData()
+            }
+        }
+    }
     
-    func handleView() {
+    
+    func handleViewDisplay() {
         if models.isEmpty {
             isModelsEmpty = true
         } else {
@@ -178,10 +187,10 @@ extension NotificationsController: NotificaionLikeEventTableViewCellDelegate {
     
     func didTapRelatedPostButton(model: UserNotification) {
         // open the post
-        print("打開 post")
         switch model.type {
         case .like(let post):
             #warning("不確定這樣對不對 post")
+            print("test",post.hasLiked,post.hasSaved)
             let vc = PostController(with: Observable<PostTest>(post))
             vc.modalPresentationStyle = .fullScreen
             navigationController?.pushViewController(vc, animated: true)

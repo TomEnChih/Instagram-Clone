@@ -6,9 +6,6 @@
 //
 
 import UIKit
-import FirebaseStorage
-import FirebaseAuth
-import FirebaseDatabase
 
 class SharePhotoController: UIViewController {
 
@@ -48,58 +45,31 @@ class SharePhotoController: UIViewController {
         
         navigationItem.rightBarButtonItem?.isEnabled = false
         
-        let fileName = UUID().uuidString
-        
-        let ref = Storage.storage().reference().child("posts").child(fileName)
-        
-        ref.putData(uploadData, metadata: nil) { (metaData, error) in
-            
-            guard error == nil else {
-                self.navigationItem.rightBarButtonItem?.isEnabled = true
+        StorageManager.shared.uploadPostImage(with: uploadData) { (result) in
+            switch result {
+            case .failure(let error):
                 print(error)
-                return
+                self.navigationItem.rightBarButtonItem?.isEnabled = true
+                
+            case .success(let downloadURLString):
+                self.saveToDatabase(imageURL: downloadURLString, caption: caption)
             }
-
-            ref.downloadURL(completion: { (url, error) in
-                guard let downloadURL = url else { return }
-                let downloadURLString = downloadURL.absoluteString
-
-                self.saveToDatabaseWithImageURL(imageURL: downloadURLString)
-            })
         }
-        
     }
     
-    private func saveToDatabaseWithImageURL(imageURL: String) {
-        #warning("caption 刪除 縮減, postImage 知道在幹嘛？, database ,storage 整理")
-        guard let postImage = selectedImage else { return }
-        guard let caption = sharePhotoView.textView.text else { return }
+    private func saveToDatabase(imageURL: String,caption: String) {
         
-        guard let email = Auth.auth().currentUser?.email else { return }
-    
-        let key = email.safeDatabaseKey()
-        
-        let userPostRef = Database.database().reference().child("posts").child(key)
-    
-        let ref = userPostRef.childByAutoId()
-        
-        let values = ["imageURL": imageURL,
-                      "caption": caption,
-                      "imageWidth": postImage.size.width,
-                      "imageHeight": postImage.size.height,
-                      "creationDate": Date().timeIntervalSince1970] as [String:Any]
-        
-        ref.updateChildValues(values) { (error, ref) in
-            guard error == nil else {
+        DatabaseManager.shared.uploadPost(imageURL: imageURL, caption: caption) { (success) in
+            if success {
+                self.dismiss(animated: true, completion: nil)
+                
+                NotificationCenter.default.post(name: SharePhotoController.updateFeedNotificationName, object: nil)
+                
+            } else {
                 self.navigationItem.rightBarButtonItem?.isEnabled = true
-                print(error)
-                return
             }
-            
-            self.dismiss(animated: true, completion: nil)
-            
-            NotificationCenter.default.post(name: SharePhotoController.updateFeedNotificationName, object: nil)
         }
+        
     }
 
 }

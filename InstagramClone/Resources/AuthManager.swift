@@ -18,72 +18,60 @@ public class AuthManager {
                                 email: String,
                                 password: String,
                                 completion: @escaping (Bool)->Void) {
-        /*
-         - check if username is available
-         - check if email is available
-         */
-        DatabaseManager.shared.canCreateNewUser(with: email, username: username) { canCreate in
-            if canCreate {
-                /*
-                 - create account
-                 - insert account to database
-                 */
-                Auth.auth().createUser(withEmail: email, password: password) { (result, error) in
-                    guard result != nil,error == nil else {
-                        // Firebase auth could not create account
-                        completion(false)
-                        return
-                    }
-                    StorageManager.shared.uploadUserProfileImage(with: profileImage) { (urlString) in
-                        switch urlString {
-                        case .success(let imageString):
-                            
-                            // insert into database
-                            DatabaseManager.shared.insertNewUser(urlString: imageString, with: email, username: username) { (inserted) in
-                                if inserted {
-                                    completion(true)
-                                    return
-                                } else {
-                                    // failed to insert to database
-                                    completion(false)
-                                    return
-                                }
-                            }
-                            
-                        case .failure(let error):
-                            print(error)
-                        }
-                        
-                    }
-                }
-            }
-            else {
-                // either username or email does not exist
-                completion(false)
-            }
-        }
         
+        /*
+         - create account
+         - insert account to database
+         */
+        Auth.auth().createUser(withEmail: email, password: password) { (result, error) in
+            guard result != nil,error == nil else {
+                // Firebase auth could not create account
+                completion(false)
+                return
+            }
+            /// 為了其他地方上傳圖片
+            guard let uploadData = profileImage.jpegData(compressionQuality: 0.3) else {
+                completion(false)
+                return
+            }
+            
+            StorageManager.shared.uploadUserProfileImage(with: uploadData) { (urlString) in
+                switch urlString {
+                case .success(let imageString):
+                    
+                    // insert into database
+                    DatabaseManager.shared.insertNewUser(urlString: imageString, with: email, username: username) { (inserted) in
+                        if inserted {
+                            completion(true)
+                            return
+                        } else {
+                            // failed to insert to database
+                            completion(false)
+                            return
+                        }
+                    }
+                    
+                case .failure(let error):
+                    print(error)
+                }
+                
+            }
+            
+        }
         
     }
     
     
-    public func loginUser(username: String?,
-                          email: String?,
+    public func loginUser(email: String,
                           password: String,
                           completion: @escaping (Bool) -> Void) {
-        if let email = email {
-            // email log in
-            Auth.auth().signIn(withEmail: email, password: password) { (authResult, error) in
-                guard authResult != nil,error == nil else {
-                    completion(false)
-                    return
-                }
-                completion(true)
+        // email log in
+        Auth.auth().signIn(withEmail: email, password: password) { (authResult, error) in
+            guard authResult != nil,error == nil else {
+                completion(false)
+                return
             }
-        } else if let username = username {
-            // username log in
-            #warning("還沒做")
-            print(username)
+            completion(true)
         }
         
     }
@@ -99,5 +87,12 @@ public class AuthManager {
             return
         }
     }
+    
+    
+    public func fetchCurrentUserEmail() -> String{
+        let email = Auth.auth().currentUser?.email
+        return email!.safeDatabaseKey()
+    }
+    
     
 }

@@ -1,5 +1,5 @@
 //
-//  ViewModel.swift
+//  Observable.swift
 //  InstagramClone
 //
 //  Created by 董恩志 on 2021/7/18.
@@ -27,9 +27,4 @@ class Observable<T> {
         listener(value)
         self.listener.append(listener)
     }
-}
-
-
-struct PostViewModel {
-    var posts: [Observable<PostTest>] = []
 }

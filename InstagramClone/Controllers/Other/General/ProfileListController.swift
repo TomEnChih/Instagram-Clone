@@ -53,6 +53,8 @@ class ProfileListController: UIViewController {
     private func setupNavigationItems() {
         self.navigationItem.title = "Posts"
     }
+    
+    
 }
 
 //MARK: - UICollectionViewDataSource,UICollectionViewDelegateFlowLayout
@@ -67,7 +69,10 @@ extension ProfileListController: UICollectionViewDataSource,UICollectionViewDele
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: HomePostCell.id, for: indexPath) as! HomePostCell
         
         cell.delegate = self
-        posts[indexPath.item].bind { (post) in
+        
+        let post = posts[indexPath.item]
+        
+        post.bind { (post) in
             cell.configure(with: post!)
         }
         
@@ -90,25 +95,14 @@ extension ProfileListController: HomePostButtonDelegate {
     
     func didTapLike(for cell: HomePostCell) {
         guard let indexPath = listView.homeCollectionView.indexPath(for: cell) else { return }
-        
         let post = posts[indexPath.item]
         
         guard let postId = post.value?.id else { return }
-        guard let email = Auth.auth().currentUser?.email else { return }
-        let safeEmail = email.safeDatabaseKey()
-        let values = [safeEmail: post.value?.hasLiked == true ? 0 : 1]
+        guard let hasLiked =  post.value?.hasLiked else { return }
         
-        Database.database().reference().child("likes").child(postId).updateChildValues(values) { (error, ref) in
-            if let error = error {
-                print("Failed to like post:",error)
-                return
-            }
-            print("Successfully liked post.")
-            post.value?.hasLiked = !post.value!.hasLiked ///post 跟 posts 無關，需要把他帶換掉 posts[indexPath.item]
-            self.posts[indexPath.item] = post
-//            self.homeView.homeCollectionView.reloadItems(at: [indexPath])
+        DatabaseManager.shared.uploadPostLike(postId: postId, hasLiked: hasLiked) { change in
+            post.value?.hasLiked = change
         }
-
     }
     
     func didTapComment(post: PostTest) {
@@ -119,25 +113,15 @@ extension ProfileListController: HomePostButtonDelegate {
     
     func didTapSave(for cell: HomePostCell) {
         guard let indexPath = listView.homeCollectionView.indexPath(for: cell) else { return }
-        
         let post = posts[indexPath.item]
         
         guard let postId = post.value?.id else { return }
-        guard let email = Auth.auth().currentUser?.email else { return }
-        let safeEmail = email.safeDatabaseKey()
-        let values = [safeEmail: post.value?.hasSaved == true ? 0 : 1]
+        guard let hasSaved =  post.value?.hasSaved else { return }
         
-        Database.database().reference().child("save").child(postId).updateChildValues(values) { (error, ref) in
-            if let error = error {
-                print("Failed to save post:",error)
-                return
-            }
-            print("Successfully saved post.")
-            post.value?.hasSaved = !post.value!.hasSaved
-            self.posts[indexPath.item] = post
-//            self.homeView.homeCollectionView.reloadItems(at: [indexPath])
+        DatabaseManager.shared.uploadPostSave(postId: postId, hasSaved: hasSaved) { (change) in
+            post.value?.hasSaved = change
         }
     }
     
+    
 }
-

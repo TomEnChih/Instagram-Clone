@@ -35,7 +35,7 @@ class LoginView: UIView {
     
     let usernameEmailField: UITextField = {
         let textField = UITextField()
-        textField.placeholder = "Username or Email..."
+        textField.placeholder = "Email..."
         textField.returnKeyType = UIReturnKeyType.next
         textField.leftViewMode = UITextField.ViewMode.always
         textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 10, height: 0))
