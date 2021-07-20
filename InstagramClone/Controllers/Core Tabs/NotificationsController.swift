@@ -31,6 +31,8 @@ class NotificationsController: UIViewController {
     
     private var isModelsEmpty = true
     
+    private var refreshControl: UIRefreshControl!
+
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
@@ -40,10 +42,14 @@ class NotificationsController: UIViewController {
         notificationsView.notificationsTableView.delegate = self
         notificationsView.notificationsTableView.dataSource = self
         fetchUser()
+        setupRefreshControl()
+        NotificationCenter.default.addObserver(self, selector: #selector(handleRefresh), name: LoginController.loginNotificationName , object: nil)
     }
     
     // MARK: - Methods
     
+    
+    //MARK: fetch Data
     private func fetchUser() {
         let email = AuthManager.shared.fetchCurrentUserEmail()
         
@@ -53,36 +59,7 @@ class NotificationsController: UIViewController {
         }
     }
     
-    //    func fetchLikePosts(with user: UserTest) {
-    //        let currentUserEmail = AuthManager.shared.fetchCurrentUserEmail()
-    //
-    //        let postRef = Database.database().reference().child("posts").child(currentUserEmail)
-    //        postRef.observeSingleEvent(of: .value) { (snapshot) in
-    //            guard let dictionaries = snapshot.value as? [String:Any] else { return }
-    //
-    //            dictionaries.forEach { (key, value) in
-    //                guard let dictionary = value as? [String:Any] else { return }
-    //                var post = PostTest(user: user, dictionary: dictionary) //自己的post
-    //                post.id = key /// comment 編號
-    //                let likeRef = Database.database().reference().child("likes").child(key)
-    //                likeRef.observeSingleEvent(of: .value) { (snapshot) in
-    //                    guard let likeDictionary = snapshot.value as? [String:Any] else { return }
-    //
-    //                    likeDictionary.forEach { (key,value) in
-    //                        guard key != currentUserEmail else { return }
-    //                        Database.fetchUserWithEmail(with: key) { (user) in
-    //                            let model = Observable<UserNotification>(UserNotification(type: .like(post: post), user: user))
-    //                            self.models.append(model)
-    //                            self.handleViewDisplay()
-    //                            self.notificationsView.notificationsTableView.reloadData()
-    //                        }
-    //                    }
-    //                }
-    //            }
-    //        }
-    //    }
-    
-    func fetchLikePosts(with user: UserTest) {
+    private func fetchLikePosts(with user: UserTest) {
         let currentUserEmail = user.email
         
         DatabaseManager.shared.fetchPostsWithEmail(with: currentUserEmail) { (id, dictionary) in
@@ -93,6 +70,9 @@ class NotificationsController: UIViewController {
                 guard email != currentUserEmail else { return }
                 
                 DatabaseManager.shared.fetchUserWithEmail(with: email) { (user) in
+                    
+                    self.refreshControl.endRefreshing()
+                    
                     let model = Observable<UserNotification>(UserNotification(type: .like(post: post), user: user))
                     self.models.append(model)
                     self.handleViewDisplay()
@@ -102,10 +82,14 @@ class NotificationsController: UIViewController {
         }
     }
     
-    func fetchFollowers(with email: String) {
+    private func fetchFollowers(with email: String) {
         
         DatabaseManager.shared.fetchFollowerEmail(userEmail: email) { (email) in
+            
             DatabaseManager.shared.fetchUserWithEmail(with: email) { (user) in
+                
+                self.refreshControl.endRefreshing()
+
                 let model = Observable<UserNotification>(UserNotification(type: .follow, user: user))
                 self.models.append(model)
                 self.handleViewDisplay()
@@ -115,7 +99,7 @@ class NotificationsController: UIViewController {
     }
     
     
-    func handleViewDisplay() {
+    private func handleViewDisplay() {
         if models.isEmpty {
             isModelsEmpty = true
         } else {
@@ -123,6 +107,19 @@ class NotificationsController: UIViewController {
         }
     }
     
+    //MARK: RefreshControl
+    private func setupRefreshControl() {
+        refreshControl = UIRefreshControl()
+        notificationsView.notificationsTableView.addSubview(refreshControl)
+        refreshControl.tintColor = .black
+        refreshControl.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
+    }
+    
+    @objc func handleRefresh() {
+        print("handling refresh ...")
+        models.removeAll()
+        fetchUser()
+    }
     
 }
 
@@ -180,6 +177,21 @@ extension NotificationsController: UITableViewDelegate,UITableViewDataSource {
             return 75
         }
     }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let model = models[indexPath.row]
+        
+        switch model.value?.type {
+        case .like(_): break
+        case .follow :
+            let vc = UserProfileController()
+            vc.userEmail = model.value?.user.email
+            vc.modalPresentationStyle = .fullScreen
+            navigationController?.pushViewController(vc, animated: true)
+        case .none: break
+        case .some(.like(_)): break
+        }
+    }
 }
 
 //MARK: - NotificaionLikeEventTableViewCellDelegate
@@ -190,7 +202,6 @@ extension NotificationsController: NotificaionLikeEventTableViewCellDelegate {
         switch model.type {
         case .like(let post):
             #warning("不確定這樣對不對 post")
-            print("test",post.hasLiked,post.hasSaved)
             let vc = PostController(with: Observable<PostTest>(post))
             vc.modalPresentationStyle = .fullScreen
             navigationController?.pushViewController(vc, animated: true)

@@ -6,8 +6,8 @@
 //
 
 import UIKit
-import FirebaseAuth
-import FirebaseDatabase
+//import FirebaseAuth
+//import FirebaseDatabase
 
 class ProfileListController: UIViewController {
 
@@ -17,6 +17,7 @@ class ProfileListController: UIViewController {
     
     private var posts: [Observable<PostTest>]
     private var index: IndexPath
+    private var currentPosts = [Observable<PostTest>]()
     
     var isUsed = false
     // MARK: - Init
@@ -38,6 +39,7 @@ class ProfileListController: UIViewController {
         setupNavigationItems()
         listView.homeCollectionView.delegate = self
         listView.homeCollectionView.dataSource = self
+        fetchHasSave()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -54,6 +56,17 @@ class ProfileListController: UIViewController {
         self.navigationItem.title = "Posts"
     }
     
+    private func fetchHasSave() {
+        
+        posts.forEach { (post) in
+            DatabaseManager.shared.fetchPostSave(userEmail: AuthManager.shared.fetchCurrentUserEmail(), postId: post.value!.id!) { (hasSaved) in
+                post.value?.hasSaved = hasSaved
+                self.currentPosts.append(post)
+                self.listView.homeCollectionView.reloadData()
+            }
+        }
+    }
+    
     
 }
 
@@ -61,7 +74,7 @@ class ProfileListController: UIViewController {
 extension ProfileListController: UICollectionViewDataSource,UICollectionViewDelegateFlowLayout {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        posts.count
+        currentPosts.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -70,7 +83,7 @@ extension ProfileListController: UICollectionViewDataSource,UICollectionViewDele
         
         cell.delegate = self
         
-        let post = posts[indexPath.item]
+        let post = currentPosts[indexPath.item]
         
         post.bind { (post) in
             cell.configure(with: post!)
@@ -95,7 +108,7 @@ extension ProfileListController: HomePostButtonDelegate {
     
     func didTapLike(for cell: HomePostCell) {
         guard let indexPath = listView.homeCollectionView.indexPath(for: cell) else { return }
-        let post = posts[indexPath.item]
+        let post = currentPosts[indexPath.item]
         
         guard let postId = post.value?.id else { return }
         guard let hasLiked =  post.value?.hasLiked else { return }
@@ -113,7 +126,7 @@ extension ProfileListController: HomePostButtonDelegate {
     
     func didTapSave(for cell: HomePostCell) {
         guard let indexPath = listView.homeCollectionView.indexPath(for: cell) else { return }
-        let post = posts[indexPath.item]
+        let post = currentPosts[indexPath.item]
         
         guard let postId = post.value?.id else { return }
         guard let hasSaved =  post.value?.hasSaved else { return }

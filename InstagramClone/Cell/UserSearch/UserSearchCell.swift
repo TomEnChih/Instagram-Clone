@@ -71,7 +71,7 @@ class UserSearchCell: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        backgroundColor = .white
+        backgroundColor = .secondarySystemBackground
         addSubview(profileImageView)
         addSubview(usernameLabel)
         addSubview(separaorView)

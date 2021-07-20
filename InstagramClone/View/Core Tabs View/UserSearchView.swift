@@ -18,7 +18,7 @@ class UserSearchView: UIView {
         
         let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
         cv.register(UserSearchCell.self, forCellWithReuseIdentifier: UserSearchCell.id)
-        cv.backgroundColor = .white
+        cv.backgroundColor = .secondarySystemBackground
         cv.alwaysBounceVertical = true
         cv.keyboardDismissMode = .onDrag
         

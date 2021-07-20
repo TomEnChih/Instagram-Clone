@@ -41,10 +41,10 @@ class PostController: UIViewController {
     // MARK: - Methods
     
     private func fetchPostLikeAndSave() {
-        DatabaseManager.shared.fetchPostLike(postId: post.value!.id!) { (hasLiked) in
+        DatabaseManager.shared.fetchPostLike(userEmail: AuthManager.shared.fetchCurrentUserEmail(), postId: post.value!.id!) { (hasLiked) in
             self.post.value?.hasLiked = hasLiked
         }
-        DatabaseManager.shared.fetchPostSave(postId: post.value!.id!) { (hasSaved) in
+        DatabaseManager.shared.fetchPostSave(userEmail: AuthManager.shared.fetchCurrentUserEmail(),postId: post.value!.id!) { (hasSaved) in
             self.post.value?.hasSaved = hasSaved
         }
     }

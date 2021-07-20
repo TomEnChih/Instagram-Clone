@@ -18,15 +18,15 @@ public class StorageManager {
     }
     //MARK: - Public
     
-    public func downloadImage(with reference: String,completion: @escaping (Result<URL,IGStorageManagerError>)->Void) {
-        bucket.child(reference).downloadURL { (url, error) in
-            guard let url = url,error == nil else {
-                completion(.failure(.failedToDownload))
-                return
-            }
-            completion(.success(url))
-        }
-    }
+//    public func downloadImage(with reference: String,completion: @escaping (Result<URL,IGStorageManagerError>)->Void) {
+//        bucket.child(reference).downloadURL { (url, error) in
+//            guard let url = url,error == nil else {
+//                completion(.failure(.failedToDownload))
+//                return
+//            }
+//            completion(.success(url))
+//        }
+//    }
     
     public func uploadUserProfileImage(with imageData: Data,completion: @escaping(Result<String,Error>)->Void) {
         

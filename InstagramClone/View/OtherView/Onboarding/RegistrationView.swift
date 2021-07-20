@@ -7,16 +7,18 @@
 
 import UIKit
 
+protocol RegistrationViewDelegate: AnyObject {
+    func didTapSignUpButton()
+    func didTapPlusPhotoButton()
+    func didTapTextField()
+}
+
+
 class RegistrationView: UIView {
 
     // MARK: - Properties
     
-    var signUpButtonAction:(()->Void)?
-    
-    var textFieldAction:(()->Void)?
-        
-    var plusPhotoButtonAction:(()->Void)?
-    
+    weak var delegate: RegistrationViewDelegate?
     // MARK: - IBElement
     
     let plusPhotoButton: UIButton = {
@@ -97,6 +99,15 @@ class RegistrationView: UIView {
         return button
     }()
     
+    lazy var textFieldAndRegisterStackView: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [usernameField,emailField,passswordField,registerButton])
+        stackView.axis = .vertical
+        stackView.distribution = .fillEqually
+        stackView.alignment = .fill
+        stackView.spacing = 10
+        return stackView
+    }()
+    
     // MARK: - Autolayout
     func autoLayout() {
         
@@ -106,34 +117,12 @@ class RegistrationView: UIView {
             make.centerX.equalTo(self)
         }
         
-        usernameField.snp.makeConstraints { (make) in
+        textFieldAndRegisterStackView.snp.makeConstraints { (make) in
             make.centerX.equalTo(self)
             make.top.equalTo(plusPhotoButton.snp.bottom).offset(50)
             make.width.equalTo(self).offset(-50)
-            make.height.equalTo(52)
+            make.height.equalTo(234)
         }
-        
-        emailField.snp.makeConstraints { (make) in
-            make.top.equalTo(usernameField.snp.bottom).offset(10)
-            make.centerX.equalTo(self)
-            make.width.equalTo(self).offset(-50)
-            make.height.equalTo(52)
-        }
-        
-        passswordField.snp.makeConstraints { (make) in
-            make.top.equalTo(emailField.snp.bottom).offset(10)
-            make.centerX.equalTo(self)
-            make.width.equalTo(self).offset(-50)
-            make.height.equalTo(52)
-        }
-        
-        registerButton.snp.makeConstraints { (make) in
-            make.top.equalTo(passswordField.snp.bottom).offset(10)
-            make.centerX.equalTo(self)
-            make.width.equalTo(self).offset(-50)
-            make.height.equalTo(52)
-        }
-        
         
     }
     
@@ -144,19 +133,14 @@ class RegistrationView: UIView {
         super.init(frame: frame)
         backgroundColor = .white
         addSubview(plusPhotoButton)
-        addSubview(usernameField)
-        addSubview(emailField)
-        addSubview(passswordField)
-        addSubview(registerButton)
+        addSubview(textFieldAndRegisterStackView)
         autoLayout()
         
-        registerButton.addTarget(self, action: #selector(didTapSignUpButton), for: .touchUpInside)
-        
-        plusPhotoButton.addTarget(self, action: #selector(didTapPlusPhotoButton), for: .touchUpInside)
-
-        usernameField.addTarget(self, action: #selector(didTapTextField), for: .editingChanged)
-        emailField.addTarget(self, action: #selector(didTapTextField), for: .editingChanged)
-        passswordField.addTarget(self, action: #selector(didTapTextField), for: .editingChanged)
+        registerButton.addTarget(self, action: #selector(handleSignUp), for: .touchUpInside)
+        plusPhotoButton.addTarget(self, action: #selector(handleAddPhoto), for: .touchUpInside)
+        usernameField.addTarget(self, action: #selector(handleTextField), for: .editingChanged)
+        emailField.addTarget(self, action: #selector(handleTextField), for: .editingChanged)
+        passswordField.addTarget(self, action: #selector(handleTextField), for: .editingChanged)
 
     }
     
@@ -166,16 +150,16 @@ class RegistrationView: UIView {
     
     // MARK: - Methods
     
-    @objc func didTapSignUpButton() {
-        signUpButtonAction?()
+    @objc func handleSignUp() {
+        delegate?.didTapSignUpButton()
     }
     
-    @objc func didTapPlusPhotoButton() {
-        plusPhotoButtonAction?()
+    @objc func handleAddPhoto() {
+        delegate?.didTapPlusPhotoButton()
     }
     
-    @objc func didTapTextField() {
-        textFieldAction?()
+    @objc func handleTextField() {
+        delegate?.didTapTextField()
     }
 
 }

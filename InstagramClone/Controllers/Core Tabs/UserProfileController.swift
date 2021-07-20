@@ -13,74 +13,68 @@ class UserProfileController: UIViewController {
     
     private let userProfileView = UserProfileView()
     
-    private var allPosts = [Observable<PostTest>]()
     private var posts = [Observable<PostTest>]()
     private var savePosts = [Observable<PostTest>]()
-    
+    /// 拿來接資料
     private var user: Observable<UserTest>?
-    
+    /// 別人的 ProfileView
     var userEmail: String?
     
     var isGridView = true
     
-    var following = [String]() {
+    var followings = [String]() {
         didSet {
             self.userProfileView.prfileCollectionView.reloadData()
         }
     }
     
-    var follower = [String]() {
+    var followers = [String]() {
         didSet {
             self.userProfileView.prfileCollectionView.reloadData()
         }
     }
+    
+    private var refreshControl: UIRefreshControl!
+
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         view = userProfileView
         userProfileView.prfileCollectionView.delegate = self
         userProfileView.prfileCollectionView.dataSource = self
-        setupNavigationButtons()
         fetchUser()
+        setupRefreshControl()
         NotificationCenter.default.addObserver(self, selector: #selector(updateUser), name: EditProfileController.editProfileNotificationName, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleRefresh), name: LoginController.loginNotificationName , object: nil)
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        setupNavigationButtons()
+    }
     
     // MARK: - Methods
-    func setupNavigationButtons() {
+    private func setupNavigationButtons() {
         let button = UIBarButtonItem(image: UIImage(systemName: "gear"),
                                      style: .done,
                                      target: self,
                                      action: #selector(didTapSettingsButton))
         button.tintColor = .black
-        navigationItem.rightBarButtonItem = button
+ 
+        if userEmail == nil {
+            navigationItem.rightBarButtonItem = button
+        }
     }
     
     @objc private func didTapSettingsButton() {
-        let vc = SettingsVC()
+        let vc = SettingsController()
         vc.title = "Settings"
         navigationController?.pushViewController(vc, animated: true)
     }
     
-    func fetchFollowerAndFollowing(){
-        guard let email = self.user?.value?.email else { return }
-        
-        DatabaseManager.shared.fetchFollowerEmail(userEmail: email) { (email) in
-            self.follower.append(email)
-        }
-        
-        DatabaseManager.shared.fetchFollowingEmail(userEmail: email) { (followingEmail) in
-            self.following.append(followingEmail)
-            
-            DatabaseManager.shared.fetchUserWithEmail(with: followingEmail) { (user) in
-                self.fetchSavePostsWithUser(with: user)
-            }
-        }
-    }
-    
     @objc func updateUser() {
         let email = AuthManager.shared.fetchCurrentUserEmail()
-
+        
         DatabaseManager.shared.fetchUserWithEmail(with: email) { (user) in
             self.user = Observable<UserTest>(user)
             self.navigationItem.title = user.username
@@ -92,76 +86,100 @@ class UserProfileController: UIViewController {
     
     private func fetchUser() {
         let email = userEmail ?? AuthManager.shared.fetchCurrentUserEmail()
-        
+
         DatabaseManager.shared.fetchUserWithEmail(with: email) { (user) in
             self.user = Observable<UserTest>(user)
             self.navigationItem.title = user.username
             
-            self.fetchFollowerAndFollowing()
+            self.fetchFollowerAndFollowing(email: email)
             self.fetchPostsWithUser(with: user)
+        }
+    }
+    
+    private func fetchFollowerAndFollowing(email: String){
+        
+        DatabaseManager.shared.fetchFollowerEmail(userEmail: email) { (followerEmail) in
+            self.followers.append(followerEmail)
+        }
+        
+        DatabaseManager.shared.fetchFollowingEmail(userEmail: email) { (followingEmail) in
+            self.followings.append(followingEmail)
+            
+            DatabaseManager.shared.fetchUserWithEmail(with: followingEmail) { (user) in
+                self.fetchSavePostsWithUser(with: user)
+            }
         }
     }
     
     private func fetchPostsWithUser(with user: UserTest) {
         
+        self.refreshControl.endRefreshing()
+        
         DatabaseManager.shared.fetchPostsWithEmail(with: user.email) { (id, dictionary) in
                         
             let post = Observable<PostTest>(PostTest(user: user, dictionary: dictionary))
             post.value?.id = id ///用於 comment
-            
-            DatabaseManager.shared.fetchPostLike(postId: id) { (hasLiked) in
+                        
+            DatabaseManager.shared.fetchPostLike(userEmail: AuthManager.shared.fetchCurrentUserEmail(), postId: id) { (hasLiked) in
                 post.value?.hasLiked = hasLiked
             }
-            DatabaseManager.shared.fetchPostSave(postId: id) { (hasSaved) in
+            DatabaseManager.shared.fetchPostSave(userEmail: user.email, postId: id) { (hasSaved) in
                 post.value?.hasSaved = hasSaved
+                if post.value?.hasSaved == true {
+                    self.savePosts.append(post)
+                    self.savePosts.sort { (p1, p2) -> Bool in
+                        return p1.value!.creationDate.compare(p2.value!.creationDate) == .orderedDescending
+                    }
+                }
             }
-            
+                        
             self.posts.append(post)
             self.posts.sort { (p1, p2) -> Bool in
                 return p1.value!.creationDate.compare(p2.value!.creationDate) == .orderedDescending
             }
             
-            self.allPosts.append(post)
-            self.allPosts.sort { (p1, p2) -> Bool in
-                return p1.value!.creationDate.compare(p2.value!.creationDate) == .orderedDescending
-            }
-            self.deletePostNoSave()
             self.userProfileView.prfileCollectionView.reloadData()
         }
     }
     
     private func fetchSavePostsWithUser(with user: UserTest) {
         
-        DatabaseManager.shared.fetchPostsWithEmail(with: user.email) { (id, dictionary) in
-                        
+        DatabaseManager.shared.fetchPostsWithEmail(with: user.email) { [self] (id, dictionary) in
+                                    
             let post = Observable<PostTest>(PostTest(user: user, dictionary: dictionary))
             post.value?.id = id ///用於 comment
             
-            DatabaseManager.shared.fetchPostLike(postId: id) { (hasLiked) in
+            DatabaseManager.shared.fetchPostLike(userEmail: AuthManager.shared.fetchCurrentUserEmail(), postId: id) { (hasLiked) in
                 post.value?.hasLiked = hasLiked
             }
-            DatabaseManager.shared.fetchPostSave(postId: id) { (hasSaved) in
+            DatabaseManager.shared.fetchPostSave(userEmail: self.userEmail ?? AuthManager.shared.fetchCurrentUserEmail(), postId: id) { (hasSaved) in
                 post.value?.hasSaved = hasSaved
-            }
-            
-            self.allPosts.append(post)
-            self.allPosts.sort { (p1, p2) -> Bool in
-                return p1.value!.creationDate.compare(p2.value!.creationDate) == .orderedDescending
-            }
-            self.deletePostNoSave()
-            self.userProfileView.prfileCollectionView.reloadData()
-        }
-    }
-    
-    private func deletePostNoSave(){
-        allPosts.forEach { (post) in
-            if post.value?.hasSaved == true {
-                savePosts.append(post)
-                savePosts.sort { (p1, p2) -> Bool in
-                    return p1.value!.creationDate.compare(p2.value!.creationDate) == .orderedDescending
+                if post.value?.hasSaved == true {
+                    self.savePosts.append(post)
+                    self.savePosts.sort { (p1, p2) -> Bool in
+                        return p1.value!.creationDate.compare(p2.value!.creationDate) == .orderedDescending
+                    }
+                    self.userProfileView.prfileCollectionView.reloadData()
                 }
             }
         }
+    }
+    
+    //MARK: RefreshControl
+    private func setupRefreshControl() {
+        refreshControl = UIRefreshControl()
+        userProfileView.prfileCollectionView.addSubview(refreshControl)
+        refreshControl.tintColor = .black
+        refreshControl.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
+    }
+    
+    @objc func handleRefresh() {
+        print("handling refresh ...")
+        followings.removeAll()
+        followers.removeAll()
+        posts.removeAll()
+        savePosts.removeAll()
+        fetchUser()
     }
     
 }
@@ -230,7 +248,7 @@ extension UserProfileController: UICollectionViewDelegateFlowLayout, UICollectio
         let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: UserProfileHeader.id, for: indexPath) as! UserProfileHeader
         
         user?.bind({ (user) in
-            header.configure(with: user!, postCount: String(self.posts.count), followerCount: String(self.follower.count), followingCount: String(self.following.count), isGridView: self.isGridView)
+            header.configure(with: user!, postCount: String(self.posts.count), followerCount: String(self.followers.count), followingCount: String(self.followings.count), isGridView: self.isGridView)
         })
         
         header.delegate = self
@@ -255,6 +273,19 @@ extension UserProfileController: UICollectionViewDelegateFlowLayout, UICollectio
 
 //MARK: - UserProfileButtonDelegate
 extension UserProfileController: UserProfileButtonDelegate {
+    
+    func didTapFollowerButton() {
+        let vc = FollowController(emails: followers)
+        vc.modalPresentationStyle = .fullScreen
+        navigationController?.pushViewController(vc, animated: true)
+    }
+    
+    func didTapFollowingButton() {
+        let vc = FollowController(emails: followings)
+        vc.modalPresentationStyle = .fullScreen
+        navigationController?.pushViewController(vc, animated: true)
+    }
+    
     
     func didChangeToGridView() {
         isGridView = true

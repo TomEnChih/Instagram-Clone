@@ -11,6 +11,8 @@ protocol UserProfileButtonDelegate: AnyObject {
     func didChangeToGridView()
     func didChangeToTaggedView()
     func didTapEditProfile()
+    func didTapFollowerButton()
+    func didTapFollowingButton()
 }
 
 class UserProfileHeader: UICollectionReusableView {
@@ -129,6 +131,12 @@ class UserProfileHeader: UICollectionReusableView {
         return view
     }()
     
+    private let tabsView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .systemBlue
+        return view
+    }()
+    
     // MARK: - Autolayout
     
     private func autoLayout() {
@@ -175,6 +183,8 @@ class UserProfileHeader: UICollectionReusableView {
             make.left.right.equalTo(self)
             make.height.equalTo(0.5)
         }
+        
+        tabsView.frame = CGRect(x: 0, y: self.frame.maxY - 2, width: self.frame.width/2, height: 2)
     }
     
     // MARK: - Init
@@ -189,12 +199,14 @@ class UserProfileHeader: UICollectionReusableView {
         addSubview(editProfileFollowButton)
         addSubview(tabStackView)
         addSubview(separateView)
+        addSubview(tabsView)
         autoLayout()
                 
         editProfileFollowButton.addTarget(self, action: #selector(handleEditProfileOrFollow), for: .touchUpInside)
         gridButton.addTarget(self, action: #selector(handleChangeToGridView), for: .touchUpInside)
         taggedButton.addTarget(self, action: #selector(handleChangeToTaggedView), for: .touchUpInside)
-        
+        followersButton.addTarget(self, action: #selector(handleFollowerView), for: .touchUpInside)
+        followeringButton.addTarget(self, action: #selector(handleFollowingView), for: .touchUpInside)
     }
     
     required init?(coder: NSCoder) {
@@ -210,9 +222,14 @@ class UserProfileHeader: UICollectionReusableView {
         postButton.setButtonTitle(String1: postCount, String2: "貼文")
         followeringButton.setButtonTitle(String1: followingCount, String2: "追蹤中")
         followersButton.setButtonTitle(String1: followerCount, String2: "粉絲")
-        gridButton.tintColor = isGridView ? .systemBlue: .lightGray
-        taggedButton.tintColor = !isGridView ? .systemBlue: .lightGray
         
+        
+        UIView.animate(withDuration: 0.5) {
+            self.tabsView.frame.origin.x = isGridView ? 0 : 0 + self.frame.width/2
+            self.tabsView.frame.origin.x = !isGridView ? 0 + self.frame.width/2 : 0
+            self.gridButton.tintColor = isGridView ? .systemBlue: .lightGray
+            self.taggedButton.tintColor = !isGridView ? .systemBlue: .lightGray
+        }
         
         profileImageView.loadingImage(url: URL(string: model.profileImageURL)!)
         usernameLabel.text = model.name
@@ -260,6 +277,14 @@ class UserProfileHeader: UICollectionReusableView {
     @objc func handleChangeToTaggedView() {
         
         delegate?.didChangeToTaggedView()
+    }
+    
+    @objc func handleFollowerView() {
+        delegate?.didTapFollowerButton()
+    }
+    
+    @objc func handleFollowingView() {
+        delegate?.didTapFollowingButton()
     }
     
     func setEditFollowButton() {

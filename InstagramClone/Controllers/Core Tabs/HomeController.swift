@@ -20,7 +20,7 @@ class HomeController: UIViewController {
         }
     }
     
-    var refreshControl: UIRefreshControl!
+    private var refreshControl: UIRefreshControl!
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
@@ -35,23 +35,11 @@ class HomeController: UIViewController {
         setupRefreshControl()
         fetchPosts()
         
-        NotificationCenter.default.addObserver(self, selector: #selector(handleUpdateFeed), name: SharePhotoController.updateFeedNotificationName , object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleRefresh), name: SharePhotoController.updateFeedNotificationName , object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleRefresh), name: LoginController.loginNotificationName , object: nil)
     }
     
     // MARK: - Methods
-    
-    private func setupNavigationItems() {
-        let titleImageView = UIImageView(image: UIImage(named: "text"))
-        titleImageView.contentMode = .scaleAspectFit
-        navigationItem.titleView = titleImageView
-    }
-    
-    private func setupRefreshControl() {
-        refreshControl = UIRefreshControl()
-        homeView.homeCollectionView.addSubview(refreshControl)
-        refreshControl.tintColor = .black
-        refreshControl.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
-    }
     
     private func handleNotAuthenticated() {
         // Check auth status
@@ -62,6 +50,23 @@ class HomeController: UIViewController {
             present(loginVC, animated: false, completion: nil)
         }
     }
+    
+    private func setupNavigationItems() {
+        
+        let button = UIButton(type: .custom)
+        button.frame = CGRect(x: 0, y: 0, width: 20, height: 20)
+        button.imageView?.contentMode = .scaleAspectFit
+        button.setImage(UIImage(named: "text"), for: .normal)
+        button.addTarget(self, action: #selector(handleScrollToTop), for: .touchUpInside)
+        
+        self.navigationItem.titleView = button
+    }
+    
+    @objc func handleScrollToTop() {
+        homeView.homeCollectionView.scrollTo(direction: .top)
+    }
+    
+    //MARK: fetch Data
     /// 有追蹤的條件下，才會顯示
     private func fetchPosts() {
         let email = AuthManager.shared.fetchCurrentUserEmail()
@@ -80,47 +85,6 @@ class HomeController: UIViewController {
         }
     }
     
-    //    private func fetchPostsWithUser1(with user: UserTest) {
-    //
-    //        let safeEmail = user.email.safeDatabaseKey()
-    //
-    //        let ref = Database.database().reference().child("posts").child(safeEmail)
-    //
-    //        ref.observeSingleEvent(of: .value) { (snapshot) in
-    //
-    //            self.refreshControl.endRefreshing()
-    //
-    //            guard let dictionaries = snapshot.value as? [String:Any] else { return }
-    //
-    //            dictionaries.forEach { (key, value) in
-    //                guard let dictionary = value as? [String:Any] else { return }
-    //
-    ////                var post = PostTest(user: user, dictionary: dictionary)
-    //                let post = Observable<PostTest>(PostTest(user: user, dictionary: dictionary))
-    //                post.value?.id = key ///用於 comment
-    //
-    //                guard let email = Auth.auth().currentUser?.email else { return }
-    //                let safeUserEmail = email.safeDatabaseKey()
-    //
-    //                Database.database().reference().child("likes").child(key).child(safeUserEmail).observeSingleEvent(of: .value) { (snapshot) in
-    //                    if let value = snapshot.value as? Int,value == 1 {
-    //                        post.value?.hasLiked = true
-    //                    } else {
-    //                        post.value?.hasLiked = false
-    //                    }
-    //                    print(post.value?.id,snapshot.value,post.value?.hasLiked)
-    //                }
-    //
-    //                self.posts.append(post)
-    //            }
-    //            self.posts.sort { (p1, p2) -> Bool in
-    //                return p1.value!.creationDate.compare(p2.value!.creationDate) == .orderedDescending
-    //            }
-    //            self.homeView.homeCollectionView.reloadData()
-    //        }
-    //    }
-    
-    
     private func fetchPostsWithUser(with user: UserTest) {
         
         DatabaseManager.shared.fetchPostsWithEmail(with: user.email) { (id, dictionary) in
@@ -130,10 +94,10 @@ class HomeController: UIViewController {
             let post = Observable<PostTest>(PostTest(user: user, dictionary: dictionary))
             post.value?.id = id ///用於 comment
             
-            DatabaseManager.shared.fetchPostLike(postId: id) { (hasLiked) in
+            DatabaseManager.shared.fetchPostLike(userEmail: AuthManager.shared.fetchCurrentUserEmail(), postId: id) { (hasLiked) in
                 post.value?.hasLiked = hasLiked
             }
-            DatabaseManager.shared.fetchPostSave(postId: id) { (hasSaved) in
+            DatabaseManager.shared.fetchPostSave(userEmail: AuthManager.shared.fetchCurrentUserEmail(),postId: id) { (hasSaved) in
                 post.value?.hasSaved = hasSaved
             }
             
@@ -146,16 +110,19 @@ class HomeController: UIViewController {
         }
     }
     
+    //MARK: RefreshControl
+    private func setupRefreshControl() {
+        refreshControl = UIRefreshControl()
+        homeView.homeCollectionView.addSubview(refreshControl)
+        refreshControl.tintColor = .black
+        refreshControl.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
+    }
+    
     @objc func handleRefresh() {
         print("handling refresh ...")
         posts.removeAll()
         fetchPosts()
     }
-    
-    @objc func handleUpdateFeed() {
-        handleRefresh()
-    }
-    
 }
 
 //MARK: - UICollectionViewDataSource,UICollectionViewDelegateFlowLayout

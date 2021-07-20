@@ -11,7 +11,7 @@ class ListView: UIView {
     
     // MARK: - Properties
     
-    // MARK: - IBOutlets
+    // MARK: - IBElements
         
     let listTableView: UITableView = {
         let tv = UITableView()

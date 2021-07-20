@@ -16,6 +16,8 @@ class UserSearchController: UIViewController {
     private var users = [Observable<UserTest>]()
     private var filteredUsers = [Observable<UserTest>]()
     
+    private var refreshControl: UIRefreshControl!
+    
     // MARK: - IBElements
     
     let searchBar: UISearchBar = {
@@ -25,52 +27,32 @@ class UserSearchController: UIViewController {
         return searchBar
     }()
     
-//    private let dimmedView: UIView = {
-//        let view = UIView()
-//        view.backgroundColor = .red
-//        view.isHidden = true
-//        view.alpha = 0
-//
-//        return view
-//    }()
-    
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view = userSearchView
-//        view.addSubview(dimmedView)
-        
+        setupKeyboardObservers()
         userSearchView.userSearchCollectionView.dataSource = self
         userSearchView.userSearchCollectionView.delegate = self
-        
+        setupRefreshControl()
         configureSearchBar()
-//        configureDimmedView()
-        
         fetchUser()
+        NotificationCenter.default.addObserver(self, selector: #selector(handleRefresh), name: LoginController.loginNotificationName , object: nil)
     }
-    
-//    private func configureDimmedView() {
-//        let gesture = UITapGestureRecognizer(target: self, action: #selector(didCancelSearch))
-//        gesture.numberOfTapsRequired = 1
-//        gesture.numberOfTouchesRequired = 1
-//        userSearchView.userSearchCollectionView.addGestureRecognizer(gesture)
-//    }
     
     private func configureSearchBar() {
         navigationController?.navigationBar.topItem?.titleView = searchBar
         searchBar.delegate = self
     }
-    
-//    override func viewDidLayoutSubviews() {
-//        super.viewDidLayoutSubviews()
-//        dimmedView.frame = view.bounds
-//    }
-    
+        
     // MARK: - Methods
     
+    //MARK: fetch Data
     private func fetchUser() {
         DatabaseManager.shared.fetchUserWithoutOneself { (email, dictionary) in
+            
+            self.refreshControl.endRefreshing()
             
             let user = Observable<UserTest>(UserTest(email: email, dictionary: dictionary))
             self.users.append(user)
@@ -85,9 +67,58 @@ class UserSearchController: UIViewController {
         }
     }
     
+    //MARK: RefreshControl
+    private func setupRefreshControl() {
+        refreshControl = UIRefreshControl()
+        userSearchView.userSearchCollectionView.addSubview(refreshControl)
+        refreshControl.tintColor = .black
+        refreshControl.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
+    }
+    
+    @objc func handleRefresh() {
+        print("handling refresh ...")
+        users.removeAll()
+        fetchUser()
+    }
+    
+    //MARK: tableView隨keyboard調整
+    private func setupKeyboardObservers() {
+        NotificationCenter.default.addObserver(self, selector: #selector(handleKeyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(handleKeyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+    
+    @objc func handleKeyboardWillShow(notification: NSNotification) {
+        let keyboardFrame = notification.userInfo? [UIResponder.keyboardFrameEndUserInfoKey] as? NSValue
+        let height = (keyboardFrame?.cgRectValue.height)
+        userSearchView.userSearchCollectionView.snp.remakeConstraints { (make) in
+            make.left.right.equalTo(self.view)
+            make.top.equalTo(self.view.snp_topMargin)
+            make.bottom.equalTo(self.view).offset(-height!)
+        }
+        
+        let keyboardDuration = notification.userInfo? [UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval
+        UIView.animate(withDuration: keyboardDuration!) {
+            self.view.layoutIfNeeded()
+        }
+    }
+    
+    @objc func handleKeyboardWillHide(notification: NSNotification) {
+        userSearchView.userSearchCollectionView.snp.remakeConstraints { (make) in
+            make.left.right.equalTo(self.view)
+            make.top.equalTo(self.view.snp_topMargin)
+            make.bottom.equalTo(self.view.snp_bottomMargin)
+        }
+        
+        let keyboardDuration = notification.userInfo? [UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval
+        UIView.animate(withDuration: keyboardDuration!) {
+            self.view.layoutIfNeeded()
+        }
+    }
+    
 }
 
-//MARK: -
+//MARK: - CollectionViewDataSource,CollectionViewDelegateFlowLayout
 
 extension UserSearchController: UICollectionViewDataSource,UICollectionViewDelegateFlowLayout {
     
@@ -116,9 +147,7 @@ extension UserSearchController: UICollectionViewDataSource,UICollectionViewDeleg
         vc.userEmail = user?.email
         navigationController?.pushViewController(vc, animated: true)
     }
-    
 }
-
 
 //MARK: - SearchBarDelegate
 
@@ -137,39 +166,15 @@ extension UserSearchController: UISearchBarDelegate {
         userSearchView.userSearchCollectionView.reloadData()
     }
     
-//    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-//
-//        didCancelSearch()
-//
-//        guard let text = searchBar.text, !text.isEmpty else { return }
-//
-//        query(text)
-//    }
-    
     func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Cancel",
                                                             style: .plain,
                                                             target: self,
                                                             action: #selector(didCancelSearch))
-    
-//        dimmedView.isHidden = false
-//        UIView.animate(withDuration: 0.2) {
-//            self.dimmedView.alpha = 0.4
-//        }
     }
     
     @objc private func didCancelSearch() {
         searchBar.resignFirstResponder()
         navigationItem.rightBarButtonItem = nil
-//        UIView.animate(withDuration: 0.2,animations: { self.dimmedView.alpha = 0 }) { done in
-//            if done {
-//                self.dimmedView.isHidden = true
-//            }
-//        }
     }
-    
-    
-//    private func query(_ text: String) {
-//         perform the search in the back end
-//    }
 }

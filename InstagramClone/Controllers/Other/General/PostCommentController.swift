@@ -11,8 +11,8 @@ class PostCommentController: UIViewController {
     
     // MARK: - Properties
     
-    var post: PostTest
-    var comments = [Observable<Comment>]() {
+    private var post: PostTest
+    private var comments = [Observable<Comment>]() {
         didSet {
             postCommentView.commentTableView.reloadData()
         }
@@ -44,6 +44,7 @@ class PostCommentController: UIViewController {
         postCommentBottomView.commentTextView.delegate = self
         buttonActionFunction()
         fetchComments()
+        setupKeyboardObservers()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -82,13 +83,50 @@ class PostCommentController: UIViewController {
     
     private func buttonActionFunction() {
         
-        postCommentBottomView.didTapSendButton = {
+        postCommentBottomView.didTapSendButton = { [weak self] in
 
-            guard let postId = self.post.id else { return }
-            guard let text = self.postCommentBottomView.commentTextView.text,text.count > 0 else { return }
+            guard let postId = self?.post.id else { return }
+            guard let text = self?.postCommentBottomView.commentTextView.text,text.count > 0 else { return }
             DatabaseManager.shared.uploadPostComment(postId: postId, text: text) {
-                self.postCommentBottomView.commentTextView.returnCommentText()
+                self?.postCommentBottomView.commentTextView.returnCommentText()
             }
+        }
+    }
+    
+    //MARK: tableView隨keyboard調整
+    private func setupKeyboardObservers() {
+        NotificationCenter.default.addObserver(self, selector: #selector(handleKeyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(handleKeyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+    
+    @objc func handleKeyboardWillShow(notification: NSNotification) {
+        let keyboardFrame = notification.userInfo? [UIResponder.keyboardFrameEndUserInfoKey] as? NSValue
+        let height = (keyboardFrame?.cgRectValue.height)
+        postCommentView.commentTableView.snp.remakeConstraints { (make) in
+            make.top.equalTo(self.view.snp.topMargin)
+            make.left.right.equalTo(self.view)
+            make.bottom.equalTo(self.view).offset(-height!)
+        }
+        
+        postCommentView.commentTableView.scrollTo(direction: .bottom)
+        
+        let keyboardDuration = notification.userInfo? [UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval
+        UIView.animate(withDuration: keyboardDuration!) {
+            self.view.layoutIfNeeded()
+        }
+    }
+    
+    @objc func handleKeyboardWillHide(notification: NSNotification) {
+        postCommentView.commentTableView.snp.remakeConstraints { (make) in
+            make.top.equalTo(self.view.snp_topMargin)
+            make.left.right.equalTo(self.view)
+            make.bottom.equalTo(self.view.snp_bottomMargin)
+        }
+        
+        let keyboardDuration = notification.userInfo? [UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval
+        UIView.animate(withDuration: keyboardDuration!) {
+            self.view.layoutIfNeeded()
         }
     }
     

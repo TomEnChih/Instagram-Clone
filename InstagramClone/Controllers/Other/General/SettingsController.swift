@@ -1,5 +1,5 @@
 //
-//  SettingsVC.swift
+//  SettingsController.swift
 //  InstagramClone
 //
 //  Created by 董恩志 on 2021/6/25.
@@ -13,7 +13,7 @@ struct SettingCellModel {
     let handle: (()->Void)
 }
 
-class SettingsVC: UIViewController {
+class SettingsController: UIViewController {
     
     // MARK: - Properties
     
@@ -106,7 +106,7 @@ class SettingsVC: UIViewController {
 }
 
 //MARK: -TableViewDelegate,TableViewDataSource
-extension SettingsVC: UITableViewDelegate,UITableViewDataSource {
+extension SettingsController: UITableViewDelegate,UITableViewDataSource {
     
     func numberOfSections(in tableView: UITableView) -> Int {
         data.count

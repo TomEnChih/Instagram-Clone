@@ -91,7 +91,7 @@ public class AuthManager {
     
     public func fetchCurrentUserEmail() -> String{
         let email = Auth.auth().currentUser?.email
-        return email!.safeDatabaseKey()
+        return email?.safeDatabaseKey() ?? "nil"
     }
     
     

@@ -21,53 +21,59 @@ class RegistrationController: UIViewController {
         registerView.usernameField.delegate = self
         registerView.emailField.delegate = self
         registerView.passswordField.delegate = self
-        buttonActionFunction()
+        setupKeyboardObservers()
+        configureGesture()
+        registerView.delegate = self
     }
     
     // MARK: - Methods
-    func buttonActionFunction() {
+    private func configureGesture() {
+        let gesture = UITapGestureRecognizer(target: self, action: #selector(handleDismisskeyboard))
+        gesture.numberOfTapsRequired = 1
+        gesture.numberOfTouchesRequired = 1
+        self.view.addGestureRecognizer(gesture)
+    }
+    
+    @objc func handleDismisskeyboard() {
+        registerView.usernameField.resignFirstResponder()
+        registerView.emailField.resignFirstResponder()
+        registerView.passswordField.resignFirstResponder()
+    }
+    
+    //MARK: tableView隨keyboard調整
+    private func setupKeyboardObservers() {
+        NotificationCenter.default.addObserver(self, selector: #selector(handleKeyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         
-        registerView.plusPhotoButtonAction = {
-            let imagePickerController = UIImagePickerController()
-            imagePickerController.delegate = self
-            imagePickerController.allowsEditing = true
-            self.present(imagePickerController, animated: true, completion: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleKeyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+    
+    @objc func handleKeyboardWillShow(notification: NSNotification) {
+        /// keybord height: 346
+        /// 原始 loginButton 距離 view.bottom: 314
+        registerView.textFieldAndRegisterStackView.snp.updateConstraints { (make) in
+            make.centerX.equalTo(self.view)
+            make.top.equalTo(registerView.plusPhotoButton.snp.bottom).offset(10)
+            make.width.equalTo(self.view).offset(-50)
+            make.height.equalTo(234)
+        }
+                
+        let keyboardDuration = notification.userInfo? [UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval
+        UIView.animate(withDuration: keyboardDuration!) {
+            self.view.layoutIfNeeded()
+        }
+    }
+    
+    @objc func handleKeyboardWillHide(notification: NSNotification) {
+        registerView.textFieldAndRegisterStackView.snp.updateConstraints { (make) in
+            make.centerX.equalTo(self.view)
+            make.top.equalTo(registerView.plusPhotoButton.snp.bottom).offset(50)
+            make.width.equalTo(self.view).offset(-50)
+            make.height.equalTo(234)
         }
         
-        
-        registerView.textFieldAction = {
-            guard let username = self.registerView.usernameField.text, !username.isEmpty,
-                  let email = self.registerView.emailField.text,!email.isEmpty,
-                  let password = self.registerView.passswordField.text,!password.isEmpty,password.count >= 8
-                  else {
-                self.registerView.registerButton.backgroundColor = UIColor(displayP3Red: 149/255, green: 144/255, blue: 204/255, alpha: 0.3)
-                self.registerView.registerButton.isEnabled = false
-                return
-            }
-            self.registerView.registerButton.backgroundColor = .systemBlue
-            self.registerView.registerButton.isEnabled = true
-        }
-        
-        registerView.signUpButtonAction = {
-            self.registerView.usernameField.resignFirstResponder()
-            self.registerView.emailField.resignFirstResponder()
-            self.registerView.passswordField.resignFirstResponder()
-            
-            guard let username = self.registerView.usernameField.text, !username.isEmpty,
-                  let email = self.registerView.emailField.text,!email.isEmpty,
-                  let password = self.registerView.passswordField.text,!password.isEmpty,password.count >= 8,
-                  let image = self.registerView.plusPhotoButton.image(for: .normal)
-                  else { return }
-            
-            AuthManager.shared.registerNewUser(profileImage: image, username: username, email: email, password: password) { (registered) in
-                    if registered {
-                        // good to go
-                        self.dismiss(animated: true, completion: nil)
-                    } else {
-                        // failed
-                    }
-            }
-            
+        let keyboardDuration = notification.userInfo? [UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval
+        UIView.animate(withDuration: keyboardDuration!) {
+            self.view.layoutIfNeeded()
         }
     }
     
@@ -85,12 +91,58 @@ extension RegistrationController: UITextFieldDelegate {
             registerView.passswordField.becomeFirstResponder()
         }
         else if textField == registerView.passswordField {
-            registerView.didTapSignUpButton()
+            registerView.handleSignUp()
         }
         
         return true
     }
     
+}
+
+//MARK: - RegistrationViewDelegate
+
+extension RegistrationController: RegistrationViewDelegate {
+    
+    func didTapSignUpButton() {
+        registerView.usernameField.resignFirstResponder()
+        registerView.emailField.resignFirstResponder()
+        registerView.passswordField.resignFirstResponder()
+        
+        guard let username = registerView.usernameField.text,
+              let email = registerView.emailField.text,
+              let password = registerView.passswordField.text,
+              let image = registerView.plusPhotoButton.image(for: .normal) else { return }
+        
+        AuthManager.shared.registerNewUser(profileImage: image, username: username, email: email, password: password) { (registered) in
+            if registered {
+                // good to go
+                self.dismiss(animated: true, completion: nil)
+            } else {
+                // failed
+            }
+        }
+    }
+    
+    func didTapPlusPhotoButton() {
+        let imagePickerController = UIImagePickerController()
+        imagePickerController.delegate = self
+        imagePickerController.allowsEditing = true
+        present(imagePickerController, animated: true, completion: nil)
+    }
+    
+    func didTapTextField() {
+        guard let username = registerView.usernameField.text, !username.isEmpty,
+              let email = registerView.emailField.text,!email.isEmpty,
+              let password = registerView.passswordField.text,!password.isEmpty,password.count >= 8 else {
+            
+            registerView.registerButton.backgroundColor = UIColor(displayP3Red: 149/255, green: 144/255, blue: 204/255, alpha: 0.3)
+            registerView.registerButton.isEnabled = false
+            return
+        }
+        
+        registerView.registerButton.backgroundColor = .systemBlue
+        registerView.registerButton.isEnabled = true
+    }
 }
 
 //MARK: - ImagePickerControllerDelegate
@@ -108,7 +160,7 @@ extension RegistrationController: UIImagePickerControllerDelegate,UINavigationCo
         } else if let originalImage = info[UIImagePickerController.InfoKey(rawValue: "UIImagePickerControllerEditedImage")] as? UIImage {
             
             selectedImageFromPicker = originalImage
-
+            
         }
         
         if let selectedImage = selectedImageFromPicker {

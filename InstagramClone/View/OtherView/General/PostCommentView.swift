@@ -31,7 +31,7 @@ class PostCommentView: UIView {
         commentTableView.snp.makeConstraints { (make) in
             make.top.equalTo(self.snp.topMargin)
             make.left.right.equalTo(self)
-            make.height.equalTo(self)
+            make.bottom.equalTo(self.snp.bottomMargin)
         }
         
     }

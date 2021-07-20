@@ -175,11 +175,9 @@ public class DatabaseManager {
         }
     }
     
-    func fetchPostLike(postId: String,completion: @escaping(Bool)->Void) {
-        
-        let currentUserEmail = AuthManager.shared.fetchCurrentUserEmail()
-        
-        let ref = database.child("likes").child(postId).child(currentUserEmail)
+    func fetchPostLike(userEmail: String,postId: String,completion: @escaping(Bool)->Void) {
+                
+        let ref = database.child("likes").child(postId).child(userEmail)
         ref.observeSingleEvent(of: .value) { (snapshot) in
             if let value = snapshot.value as? Int,value == 1 {
 //                post.value?.hasLiked = true
@@ -225,11 +223,9 @@ public class DatabaseManager {
     }
     
     
-    func fetchPostSave(postId: String,completion: @escaping(Bool)->Void) {
+    func fetchPostSave(userEmail: String,postId: String,completion: @escaping(Bool)->Void) {
         
-        let currentUserEmail = AuthManager.shared.fetchCurrentUserEmail()
-        
-        database.child("save").child(postId).child(currentUserEmail).observeSingleEvent(of: .value) { (snapshot) in
+        database.child("save").child(postId).child(userEmail).observeSingleEvent(of: .value) { (snapshot) in
             
             if let value = snapshot.value as? Int ,value == 1 {
 //                post.value?.hasSaved = true
