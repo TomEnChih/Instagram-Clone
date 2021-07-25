@@ -42,15 +42,13 @@ class UserProfileController: UIViewController {
         view = userProfileView
         userProfileView.prfileCollectionView.delegate = self
         userProfileView.prfileCollectionView.dataSource = self
-        fetchUser()
         setupRefreshControl()
-        NotificationCenter.default.addObserver(self, selector: #selector(updateUser), name: EditProfileController.editProfileNotificationName, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(handleRefresh), name: LoginController.loginNotificationName , object: nil)
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         setupNavigationButtons()
+        handleRefresh()
     }
     
     // MARK: - Methods

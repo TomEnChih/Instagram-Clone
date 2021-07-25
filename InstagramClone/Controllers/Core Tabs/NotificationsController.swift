@@ -41,9 +41,11 @@ class NotificationsController: UIViewController {
         self.navigationItem.title = "Notifications"
         notificationsView.notificationsTableView.delegate = self
         notificationsView.notificationsTableView.dataSource = self
-        fetchUser()
         setupRefreshControl()
-        NotificationCenter.default.addObserver(self, selector: #selector(handleRefresh), name: LoginController.loginNotificationName , object: nil)
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        handleRefresh()
     }
     
     // MARK: - Methods

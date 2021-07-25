@@ -88,5 +88,4 @@ class CustomButton: UIButton {
             
         }
     }
-
 }

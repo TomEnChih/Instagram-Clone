@@ -10,9 +10,7 @@ import UIKit
 class CommentTextView: UITextView {
 
     // MARK: - Properties
-    
-    static let textChangeNotificationName = Notification.Name("textChange")
-    
+        
     // MARK: - IBElements
     
     private let placeholderLabel: UILabel = {
@@ -36,9 +34,7 @@ class CommentTextView: UITextView {
     
     override init(frame: CGRect, textContainer: NSTextContainer?) {
         super.init(frame: frame, textContainer: textContainer)
-        
-        NotificationCenter.default.addObserver(self, selector: #selector(handleTextChange), name: CommentTextView.textChangeNotificationName, object: nil)
-        
+                
         addSubview(placeholderLabel)
         autoLayout()
     }

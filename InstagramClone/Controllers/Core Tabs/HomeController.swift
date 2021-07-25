@@ -33,10 +33,10 @@ class HomeController: UIViewController {
         
         setupNavigationItems()
         setupRefreshControl()
-        fetchPosts()
-        
-        NotificationCenter.default.addObserver(self, selector: #selector(handleRefresh), name: SharePhotoController.updateFeedNotificationName , object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(handleRefresh), name: LoginController.loginNotificationName , object: nil)
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        handleRefresh()
     }
     
     // MARK: - Methods

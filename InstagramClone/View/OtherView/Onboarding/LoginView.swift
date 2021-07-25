@@ -57,6 +57,7 @@ class LoginView: UIView {
     let passswordField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "Password..."
+        textField.isSecureTextEntry  = true
         textField.returnKeyType = UIReturnKeyType.continue
         textField.leftViewMode = UITextField.ViewMode.always
         textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 10, height: 0))

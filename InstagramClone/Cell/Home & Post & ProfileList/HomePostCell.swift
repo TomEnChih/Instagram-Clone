@@ -166,7 +166,6 @@ class HomePostCell: UICollectionViewCell {
             make.top.equalTo(buttonStackView.snp.bottom)
             make.left.equalTo(self).offset(10)
             make.right.equalTo(self).offset(-10)
-            make.width.equalTo(self)
             make.bottom.equalTo(self)
         }
         

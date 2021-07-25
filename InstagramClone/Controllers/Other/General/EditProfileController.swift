@@ -26,8 +26,6 @@ class EditProfileController: UIViewController {
     var isChangeProfileImage = false
     var selectedImage = UIImage()
     
-    static let editProfileNotificationName = Notification.Name("editProfile")
-
     // MARK: - Init
     
     init(user: UserTest) {
@@ -119,7 +117,6 @@ class EditProfileController: UIViewController {
         DatabaseManager.shared.uplaodUserProfile(imageURL: imageURL, username: user.username, name: user.name, bio: user.bio) { (success) in
             
             if success {
-                NotificationCenter.default.post(name: EditProfileController.editProfileNotificationName, object: nil)
                 self.dismiss(animated: true, completion: nil)
                 
             } else {

@@ -45,7 +45,7 @@ class ProfileListController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         if !isUsed {
-            listView.homeCollectionView.scrollToItem(at: index, at: .centeredVertically, animated: true)
+            listView.homeCollectionView.scrollToItem(at: index, at: .centeredVertically, animated: false)
             isUsed = !isUsed
         }
     }

@@ -37,8 +37,10 @@ class UserSearchController: UIViewController {
         userSearchView.userSearchCollectionView.delegate = self
         setupRefreshControl()
         configureSearchBar()
-        fetchUser()
-        NotificationCenter.default.addObserver(self, selector: #selector(handleRefresh), name: LoginController.loginNotificationName , object: nil)
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        handleRefresh()
     }
     
     private func configureSearchBar() {

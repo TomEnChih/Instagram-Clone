@@ -71,6 +71,7 @@ class RegistrationView: UIView {
     let passswordField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "Password..."
+        textField.isSecureTextEntry  = true
         textField.returnKeyType = UIReturnKeyType.continue
         textField.leftViewMode = UITextField.ViewMode.always
         textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 10, height: 0))
@@ -81,6 +82,7 @@ class RegistrationView: UIView {
         textField.backgroundColor = .secondarySystemBackground
         textField.layer.borderWidth = 1.0
         textField.layer.borderColor = UIColor.secondaryLabel.cgColor
+//        textField.keyboardType = 
 //        textField.borderStyle = .roundedRect
 //        textField.clearButtonMode = .whileEditing
 //        textField.keyboardType = .default
