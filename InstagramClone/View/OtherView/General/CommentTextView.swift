@@ -11,6 +11,8 @@ class CommentTextView: UITextView {
 
     // MARK: - Properties
         
+    static let textChangeNotificationName = Notification.Name("textChange")
+
     // MARK: - IBElements
     
     private let placeholderLabel: UILabel = {
@@ -37,6 +39,8 @@ class CommentTextView: UITextView {
                 
         addSubview(placeholderLabel)
         autoLayout()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(handleTextChange), name: CommentTextView.textChangeNotificationName, object: nil)
     }
     
     required init?(coder: NSCoder) {

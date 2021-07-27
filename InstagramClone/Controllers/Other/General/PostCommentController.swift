@@ -41,6 +41,7 @@ class PostCommentController: UIViewController {
         self.navigationItem.title = "Comments"
         postCommentView.commentTableView.delegate = self
         postCommentView.commentTableView.dataSource = self
+        postCommentBottomView.commentTextView.delegate = self
         buttonActionFunction()
         fetchComments()
         setupKeyboardObservers()
@@ -157,5 +158,13 @@ extension PostCommentController: UITableViewDelegate,UITableViewDataSource {
         UIView()
     }
     
+}
+
+//MARK: - UITextViewDelegate
+extension PostCommentController: UITextViewDelegate {
+    
+    func textViewDidChange(_ textView: UITextView) {
+        NotificationCenter.default.post(name: CommentTextView.textChangeNotificationName, object: nil)
+    }
     
 }
